@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "$GENESIS_REQUESTED_FEATURES"
+
+want_feature external-pg || echo “+internal-pg”
+
+exit 0

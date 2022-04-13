@@ -1,0 +1,17 @@
+#!/bin/bash
+shopt -s nullglob
+set -eu
+
+declare -a manifests
+
+manifests+=( manifests/scheduler.yml manifests/releases/scheduler.yml )
+
+validate_features external-postgres
+
+if want_feature "external-postgres" ; then
+  manifests+=( manifests/external-pg.yml )
+else
+  manifests+=( manifests/releases/postgres.yml )
+fi
+
+echo ${manifests[@]}

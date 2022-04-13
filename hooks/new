@@ -1,0 +1,26 @@
+#!/bin/bash
+shopt -s nullglob
+set -eu
+
+#
+# Genesis Kit `new' Hook
+#
+
+(
+cat <<EOF
+kit:
+  name:    $GENESIS_KIT_NAME
+  version: $GENESIS_KIT_VERSION
+  features:
+    - (( replace ))
+
+EOF
+
+genesis_config_block
+
+cat <<EOF
+params: {}
+EOF
+) >$GENESIS_ROOT/$GENESIS_ENVIRONMENT.yml
+
+exit 0
