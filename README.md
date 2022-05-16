@@ -1,9 +1,8 @@
 scheduler Genesis Kit
 =================
 
-FIXME: The kit author should have filled this in with details about
-what this is, and what it provides. But they have not, and that is sad.
-Perhaps a GitHub issue should be opened to remind them of this?
+This assumes a genesis deployed CF environment with the same environment name 
+has already been deployed.
 
 Quick Start
 -----------
@@ -17,9 +16,6 @@ genesis init --kit scheduler
 
 # create a scheduler-deployments repo using v1.0.0 of the scheduler kit
 genesis init --kit scheduler/1.0.0
-
-# create a my-scheduler-configs repo using the latest version of the scheduler kit
-genesis init --kit scheduler -d my-scheduler-configs
 ```
 
 Once created, refer to the deployment repository README for information on
@@ -28,25 +24,41 @@ provisioning and deploying new environments.
 Features
 -------
 
-FIXME: The kit author should have filled this in with details
-about what features are defined, and how they affect the deployment. But they
-have not, and that is sad. Perhaps a GitHub issue should be opened to remind
-them of this?
+## `external-postgres`
+
+By default an internal (colocoated job) postgres is deployed for use. Optionally
+you may configure to use an external PostgreSQL database by adding the 
+`external-postgres` feature together with the following parameters:
+
+```
+params:
+  pg:
+    host: "..."
+    port: "5432"
+    user: "..."
+    pass: "..."
+```
+
+## `cf-route-registrar`
+
+By enabling the `cf-route-registrar` feature the kit will extrac the CF deployment
+information required to register the scheduler API with CF at 
+`scheduler.<cf_system_domain>`
 
 Params
 ------
 
-FIXME: The kit author should have filled this in with details about the params
-present in the base kit, as well as each feature defined. These should likely
-be in different sections (one for base, one per feature). Unfortunately,
-the author has not done this, and that is sad. Perhaps a GitHub issue
-should be opened to remind them of this?
+No specific parameters are required in order to deploy the OCF Scheduler kit.
+
+Params per-feature are defined above.
 
 Cloud Config
 ------------
 
-FIXME: The kit author should have filled in this section with details about
-what cloud config definitions this kit expects to see in play and how to
-override them. Also useful are hints at default values for disk + vm sizing,
-scaling considerations, and other miscellaneous IaaS components that the deployment
-might require, like load balancers.
+The scheduler service is golang based and as such does not require a huge amount 
+of resources. That said be sure to allocate enough dedicated CPU vs time-shared.
+Two cores should be sufficient. 
+
+If using the internal postgres feature (default) then more resources should be 
+allocated for the running of the PostgreSQL server.
+

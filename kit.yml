@@ -4,16 +4,15 @@ author:  Wayne E. Seguin <wayneeseguin@starkandwayne.com>
 docs:    https://github.com/cloudfoundry-community/scheduler-boshrelease
 code:    https://github.com/genesis-community/scheduler-genesis-kit
 
-# 2.7.0 was our last big feature bump
 genesis_version_min: 2.8.4
 
 credentials:
-  +internal-pg:
+  +internal-postgres:
     role:
       password: random 32 fixed
 
 provided:
-  +external-pg:
+  +external-postgres:
     role:
       keys:
         password:

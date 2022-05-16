@@ -1,18 +1,18 @@
 #!/bin/bash
+
 shopt -s nullglob
 set -eu
 
-#
 # Genesis Kit `new' Hook
-#
-
 (
 cat <<EOF
 kit:
   name:    $GENESIS_KIT_NAME
   version: $GENESIS_KIT_VERSION
-  features:
-    - (( replace ))
+  features: []
+    #- external-postgres  # Use an external postgresql database
+    #- cf-route-registrar # Use CF Route registration @ scheduler.<system_domain>
+    #- my-ops-file        # Use a custom ops file at ops/my-ops-file.yml
 
 EOF
 

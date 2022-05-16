@@ -2,6 +2,6 @@
 
 echo "$GENESIS_REQUESTED_FEATURES"
 
-want_feature external-pg || echo “+internal-pg”
+want_feature external-postgres || echo "+internal-postgres"
 
 exit 0

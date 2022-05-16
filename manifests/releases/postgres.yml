@@ -1,3 +1,4 @@
+releases:
 - name: "postgres"
   version: "43"
   url: "https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=43"

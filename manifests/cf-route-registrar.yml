@@ -1,0 +1,53 @@
+---
+addons:
+- name: bosh-dns-aliases
+  include:
+    jobs:
+    - name: route_registrar
+      release: routing
+  jobs:
+  - name: bosh-dns-aliases
+    release: bosh-dns-aliases
+    properties:
+      aliases:
+      - domain: nats.service.cf.internal
+        targets:
+        - deployment: (( grab meta.cf.deployment_name ))
+          domain: bosh
+          instance_group: nats
+          network: (( grab params.cf.core_network ))
+          query: '*'
+      - domain: _.nats.service.cf.internal
+        targets:
+        - deployment: (( grab meta.cf.deployment_name ))
+          domain: bosh
+          instance_group: nats
+          network: (( grab params.cf.core_network ))
+          query: _
+---
+- type: replace
+  path: /instance_groups/0/jobs/-
+  value:
+    name: route_registrar
+    release: routing
+    consumes:
+      nats-tls:              # vs nats
+        from:       nats-tls # vs nats
+        deployment: (( grab meta.cf.deployment_name ))
+    properties:
+      nats:
+        tls:
+          enabled: true
+          client_cert: (( grab params.nats.client_cert ))
+          client_key:  (( grab params.nats.client_key ))
+      route_registrar:
+        routes:
+        - name: scheduler
+          port: 8000 # Scheduler API Port
+          registration_interval: 10s
+          uris:
+            - (( grap params.scheduler.domain ))
+        host: (( grab params.cf.system_domain ))
+- type: replace
+  path: /instance_groups/0/jobs/-
+  value:

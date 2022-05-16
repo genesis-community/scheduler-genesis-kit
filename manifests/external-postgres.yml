@@ -1,0 +1,15 @@
+params:
+  pg:
+    port: 5432
+    host: (( param "What is the hostname or IP for your external Postgresql Database?" ))
+
+meta:
+  pg:
+    host: (( grab params.pg.host ))
+    port: (( grab params.pg.port ))
+    user: (( vault meta.vault "/role:username" ))
+
+instance_groups:
+- name: scheduler
+  jobs:
+  - (( delete "postgres" ))

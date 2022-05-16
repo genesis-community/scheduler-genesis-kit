@@ -9,9 +9,29 @@ manifests+=( manifests/scheduler.yml manifests/releases/scheduler.yml )
 validate_features external-postgres
 
 if want_feature "external-postgres" ; then
-  manifests+=( manifests/external-pg.yml )
+  manifests+=( manifests/external-postgres.yml )
 else
   manifests+=( manifests/releases/postgres.yml )
 fi
+
+for want in $GENESIS_REQUESTED_FEATURES; do
+  case "$want" in
+    (external-postgres|internal-postgres) # Covered above
+      true
+      ;;
+    (cf-route-registrar)
+      manifests+=( manifests/releases/routing.yml manifests/cf-route-registrar.yml )
+      ;;
+    (*)
+      if [[ -f "$GENESIS_ROOT/ops/$want.yml" ]] ; then
+        manifests+=( "$GENESIS_ROOT/ops/$want.yml" )
+      else
+        abort=1
+        describe >&2 \
+          "#R{[ERROR]} The #c{$want} feature is invalid. See the manual for list of valid features."
+      fi
+      ;;
+  esac
+done
 
 echo ${manifests[@]}

@@ -48,16 +48,16 @@ cf_login() {
 
 add_plugin() {
   cf_login
-  describe "" "" "#Wkiu{Attempting to install latest version of the CF-Community/app-scheduler-plugin...}"
-  existing="$(cf plugins --checksum | grep Scheduler | tr -s ' ' | cut -d ' ' -f 2)"
-  cf install-plugin -r CF-Community app-scheduler-plugin "$@"
-  updated="$( cf plugins --checksum | grep Scheduler | tr -s ' ' | cut -d ' ' -f 2)"
+  describe "" "" "#Wkiu{Attempting to install latest version of the starkandwayne/ocf-scheduler-cf-plugin...}"
+  existing="$(cf plugins --checksum | grep OCFScheduler | tr -s ' ' | cut -d ' ' -f 2)"
+  cf install-plugin -r starkandwayne ocf-scheduler-cf-plugin "$@"
+  updated="$( cf plugins --checksum | grep OCFScheduler | tr -s ' ' | cut -d ' ' -f 2)"
   if [[ -z "$updated" ]] ; then
     echo
     exit 0
   fi
   if [[ "$existing" == "$updated" ]] ; then
-    describe "No update - existing app-scheduler-plugin remains at version $existing" ""
+    describe "No update - existing ocf-scheduler-cf-plugin remains at version $existing" ""
     exit 0
   fi
   [[ -n "$existing" ]] && action="updated" || action="installed"
@@ -65,11 +65,10 @@ add_plugin() {
   echo ""
   echo "$header"
   echo "$header" | sed -e 's/[^ ] [^ ]/xxx/g' | sed -e 's/[^ ]/-/g'
-  cf plugins | grep Scheduler
+  cf plugins | grep OCFScheduler
   describe "" \
-    "#G{[OK]} Successfully $action CF-Community app-scheduler-plugin." \
-        "     You can run #c{cf uninstall-plugin Scheduler} to remove it when no" \
-        "     longer desired."
+    "#G{[OK]} Successfully $action starkandwayne ocf-scheduler-cf-plugin." \
+        "     You can run #c{cf uninstall-plugin OCFScheduler} to remove it."
   exit 0
 }
 

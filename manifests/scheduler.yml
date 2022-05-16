@@ -2,65 +2,75 @@
 meta:
   default:
     azs: [z1]
+  pg:
+    host: "127.0.0.1"
+    port: "5432"
+    user: "scheduler-admin"
+    pass: (( vault meta.vault "/role:password" ))
   cf:
-		exodus:  (( concat $GENESIS_EXODUS_MOUNT params.cf_deployment_env "/" params.cf_deployment_type ))
-    deployment_name: (( concat params.cf_deployment_env "-" params.cf_deployment_type ))
-  pg_host: "127.0.0.1"
-  pg_port: "5432"
-  pg_username: "scheduler-admin" 
-  pg_password: (( vault meta.vault "/role:password" ))
+    exodus: (( concat $GENESIS_EXODUS_MOUNT params.cf.deployment_env "/" params.cf.deployment_type ))
+    deployment_name: (( concat params.cf.deployment_env "-" params.cf.deployment_type ))
+    system_domain: (( vault "secret/exodus/" meta.bosh_exodus_path "/cf:system_domain" ))
 
 params:
-  network:            (( grab params.cf_core_network ))
-  cf_deployment_env:  (( grab genesis.env )) # assumes same name as cf env
-  cf_deployment_type: cf # for crazy people using an "non-cf" cf deployment named something else
-  cf_core_network:    (( vault meta.cf.exodus ":core_network" ))
-  cf_system_domain:   (( vault meta.cf.exodus ":system_domain" ))
-
-  cf_client_id:     (( vault meta.cf.exodus ":scheduler_client" ))
-  cf_client_secret: (( vault meta.cf.exodus ":scheduler_secret" ))
-  pg_sslmode: "disable"
-  pg_database: "scheduler"
+  cf:
+    deployment_env:  (( grab genesis.env )) # assume the same env name as cf env
+    deployment_type: cf # for crazy people using an non-"cf" cf deployment name
+    core_network:    (( vault meta.cf.exodus ":core_network" ))
+    system_domain:   (( vault meta.cf.exodus ":system_domain" ))
+  network:           (( grab params.cf.core_network ))
+  nats:
+    client_cert: (( vault meta.cf.exodus ":nats_client_cert" ))
+    client_key:  (( vault meta.cf.exodus ":nats_client_key" ))
+  uaa:
+    client_id:     (( vault meta.cf.exodus ":app_scheduler_client" ))
+    client_secret: (( vault meta.cf.exodus ":app_scheduler_secret" ))
+  scheduler:
+    domain:  (( concat "scheduler." meta.cf.system_domain ))
+  pg:
+    sslmode: "disable"
+    database: "scheduler"
 
 instance_groups:
-  - name:      scheduler
-    instances: 1
-    azs:       (( grab params.availability_zones || meta.default.azs ))
-    stemcell:  default
-    networks:  { name: (( grab params.network || "default" )) }
-    vm_type:   (( grab params.vm_type || "default" ))
+- name:      scheduler
+  instances: 1
+  azs:      (( grab params.availability_zones || meta.default.azs ))
+  stemcell: default
+  networks: 
+  - name:  (( grab params.network || "default" ))
+  vm_type: (( grab params.vm_type || "default" ))
 
-    jobs: 
-      - name: scheduler
-        release: scheduler-boshrelease
-        consumes:
-          postgres:
-            from: postgres-db
+  jobs: 
+  - name: scheduler
+    release: scheduler-boshrelease
+    consumes:
+      postgres:
+        from: scheduler-postgres
 
-				properties:
-					scheduler:
-						uaa:
-							client_id: (( grab params.uaa_client_id ))
-							client_secret: (( grab params.uaa_client_secret ))
-							endpoint: (( concat "https://uaa."  params.cf_system_domain ))
-						cf:
-							api: (( concat "https://api." params.cf_system_domain )) ##FIXME
-						postgres:
-							uri: (( concat "postgres://" meta.pg_username ":" meta.pg_password "@" meta.pg_host ":" meta.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
+    properties:
+      scheduler:
+        uaa:
+          client_id: (( grab params.uaa.client_id ))
+          client_secret: (( grab params.uaa.client_secret ))
+          endpoint: (( concat "https://uaa."  params.cf.system_domain ))
+        cf:
+          api: (( concat "https://api." params.cf.system_domain ))
+        postgres:
+          uri: (( concat "postgres://" meta.pg.user":" meta.pg.pass"@" meta.pg.host ":" meta.pg.port "/" params.pg.database "?sslmode=" params.pg.sslmode ))
 
-      - name: postgres
-        properties:
-          databases:
-            roles:
-              - name: (( grab meta.pg_username ))
-                password: (( grab meta.pg_password ))
-            databases: 
-            - name: (( grab params.pg_database ))
-            port: (( grab meta.pg_port ))
-        provides:
-          postgres:
-            as: postgres-db
-        release: postgres
+  - name: postgres
+    properties:
+      databases:
+        roles:
+          - name: (( grab meta.pg.user))
+            password: (( grab meta.pg.pass))
+        databases: 
+        - name: (( grab params.pg.database ))
+        port: (( grab meta.pg.port ))
+    provides:
+      postgres:
+        as: scheduler-postgres
+    release: postgres
 
 update:
   serial:            false
@@ -75,15 +85,15 @@ stemcells:
     os:      (( grab params.stemcell_os      || "ubuntu-bionic" ))
     version: (( grab params.stemcell_version || "latest" ))
 
-
 name: scheduler
+
 stemcells:
 - alias: default
   os: ubuntu-bionic
   version: latest
-releases: []
+
 update:
   canaries: 2
   max_in_flight: 1
   canary_watch_time: 5000-60000
-  update_watch_time: 5000-60000
+
