@@ -18,6 +18,8 @@ params:
     deployment_type: cf # for crazy people using an non-"cf" cf deployment name
     core_network:    (( vault meta.cf.exodus ":core_network" ))
     system_domain:   (( vault meta.cf.exodus ":system_domain" ))
+    system_org:      (( vault meta.cf.exodus ":system_org" ))
+    system_space:    (( vault meta.cf.exodus ":system_space" ))
   network:           (( grab params.cf.core_network ))
   nats:
     client_cert: (( vault meta.cf.exodus ":nats_client_cert" ))
@@ -71,6 +73,26 @@ instance_groups:
       postgres:
         as: scheduler-postgres
     release: postgres
+
+- name: smoke-tests
+  instances: 1
+  azs:       (( grab params.availability_zones || meta.default.azs ))
+  stemcell:  default
+  networks:  
+  - name:  (( grab params.network || "default" ))
+  vm_type: (( grab params.vm_type || "default" ))
+  lifecycle: errand
+
+  jobs:
+  - name: smoke-tests
+    release: scheduler-boshrelease
+    properties:
+      cf:
+        client_id: (( grab params.uaa.client_id ))
+        client_secret: (( grab params.uaa.client_secret ))
+        api: (( concat "https://api." params.cf.system_domain ))
+        organization: (( grab params.cf.system_org ))
+        space: (( grab params.cf.system_space ))
 
 update:
   serial:            false
