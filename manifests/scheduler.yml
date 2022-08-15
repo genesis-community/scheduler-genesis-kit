@@ -1,5 +1,8 @@
 ---
 meta:
+  default_bosh_exodus_path:     (( concat $GENESIS_ENVIRONMENT "/bosh" ))
+  bosh_exodus_path:             (( grab params.bosh_exodus_path || meta.default_bosh_exodus_path ))
+
   default:
     azs: [z1]
   pg:
@@ -20,8 +23,8 @@ params:
     system_domain:   (( vault meta.cf.exodus ":system_domain" ))
     system_org:      (( vault meta.cf.exodus ":system_org" ))
     system_space:    (( vault meta.cf.exodus ":system_space" ))
-    username:        (( vault meta.cf.exodus ":system_username" ))
-    password:        (( vault meta.cf.exodus ":system_password" ))
+    username:        (( vault meta.cf.exodus ":admin_username" ))
+    password:        (( vault meta.cf.exodus ":admin_password" ))
   network:           (( grab params.cf.core_network ))
   nats:
     client_cert: (( vault meta.cf.exodus ":nats_client_cert" ))
@@ -60,17 +63,17 @@ instance_groups:
         cf:
           api: (( concat "https://api." params.cf.system_domain ))
         postgres:
-          uri: (( concat "postgres://" meta.pg.user":" meta.pg.pass"@" meta.pg.host ":" meta.pg.port "/" params.pg.database "?sslmode=" params.pg.sslmode ))
+          uri: (( concat "postgres://" params.pg.user ":" params.pg.pass "@" params.pg.host ":" params.pg.port "/" params.pg.database "?sslmode=" params.pg.sslmode ))
 
   - name: postgres
     properties:
       databases:
         roles:
-          - name: (( grab meta.pg.user))
-            password: (( grab meta.pg.pass))
+          - name:     (( grab params.pg.user))
+            password: (( grab params.pg.pass))
         databases: 
         - name: (( grab params.pg.database ))
-        port: (( grab meta.pg.port ))
+        port:   (( grab params.pg.port ))
     provides:
       postgres:
         as: scheduler-postgres
@@ -81,8 +84,8 @@ instance_groups:
   azs:       (( grab params.availability_zones || meta.default.azs ))
   stemcell:  default
   networks:  
-  - name:  (( grab params.network || "default" ))
-  vm_type: (( grab params.vm_type || "default" ))
+  - name:    (( grab params.network || "default" ))
+  vm_type:   (( grab params.vm_type || "default" ))
   lifecycle: errand
 
   jobs:

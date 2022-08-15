@@ -6,8 +6,6 @@ declare -a manifests
 
 manifests+=( manifests/scheduler.yml manifests/releases/scheduler.yml )
 
-validate_features external-postgres
-
 if want_feature "external-postgres" ; then
   manifests+=( manifests/external-postgres.yml )
 else

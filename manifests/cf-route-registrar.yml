@@ -46,8 +46,11 @@ addons:
           port: 8000 # Scheduler API Port
           registration_interval: 10s
           uris:
-            - (( grap params.scheduler.domain ))
+            - (( grab params.scheduler.domain ))
         host: (( grab params.cf.system_domain ))
 - type: replace
   path: /instance_groups/0/jobs/-
   value:
+    name: bpm
+    release: bpm
+
