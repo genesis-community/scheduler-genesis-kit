@@ -1,12 +1,13 @@
 ---
-params:
+meta:
   pg:
-    host:   (( param "Please provide the hostname / IP of your external PostgreSQL database instance." ))
-    port:   5432
-    scheme: postgres
-    user:   (( vault.path "external_db:username"))
-    pass:   (( vault.path "external_db:password"))
-    # sslmode: enable
+    scheme:   (( params.pg.scheme   || "postgres" ))
+    username: (( params.pg.username || vault.path "external_db:username" || "postgres" ))
+    password: (( params.pg.password || vault.path "external_db:password" ))
+    hostname: (( params.pg.hostname || vault.path "external_db:hostname" ))
+    port:     (( params.pg.port     || 5432 ))
+    sslmode:  (( params.pg.sslmode  || "disable" ))
+    database: (( params.pg.database || "scheduler" ))
 
 instance_groups:
 - name: scheduler

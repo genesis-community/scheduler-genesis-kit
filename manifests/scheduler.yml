@@ -31,9 +31,6 @@ params:
     client_secret: (( vault meta.cf.exodus ":app_scheduler_secret" ))
   scheduler:
     domain:  (( concat "scheduler." meta.cf.system_domain ))
-  pg:
-    sslmode: "disable"
-    database: "scheduler"
 
 instance_groups:
 - name:      scheduler
@@ -60,7 +57,7 @@ instance_groups:
         cf:
           api: (( concat "https://api." params.cf.system_domain ))
         postgres:
-          uri: (( concat "postgres://" params.pg.user ":" params.pg.pass "@" params.pg.host ":" params.pg.port "/" params.pg.database "?sslmode=" params.pg.sslmode ))
+          uri: (( concat "postgres://" meta.pg.user ":" meta.pg.pass "@" meta.pg.hostname ":" meta.pg.port "/" meta.pg.database "?sslmode=" meta.pg.sslmode ))
 
   - name: postgres
     properties:
