@@ -1,3 +1,5 @@
 releases:
 - name: scheduler-boshrelease
-  version: latest
+  version: 0.0.10
+  url: https://github.com/starkandwayne/ocf-scheduler-boshrelease/releases/download/0.0.10/ocf-scheduler-v0.0.10.tgz
+  sha1: b1417d82ec3571f8a177010b21f33fe1d07995bb
