@@ -1,8 +1,5 @@
 ---
 meta:
-  default_bosh_exodus_path:     (( concat $GENESIS_ENVIRONMENT "/bosh" ))
-  bosh_exodus_path:             (( grab params.bosh_exodus_path || meta.default_bosh_exodus_path ))
-
   default:
     azs: [z1]
   pg:
@@ -13,7 +10,7 @@ meta:
   cf:
     exodus: (( concat $GENESIS_EXODUS_MOUNT params.cf.deployment_env "/" params.cf.deployment_type ))
     deployment_name: (( concat params.cf.deployment_env "-" params.cf.deployment_type ))
-    system_domain: (( vault "secret/exodus/" meta.bosh_exodus_path "/cf:system_domain" ))
+    system_domain: (( vault "secret/exodus/" params.cf.deployment_env "/cf:system_domain" ))
 
 params:
   cf:
