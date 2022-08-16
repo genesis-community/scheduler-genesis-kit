@@ -3,10 +3,14 @@ meta:
   default:
     azs: [z1]
   pg:
-    host: "127.0.0.1"
-    port: "5432"
-    user: "scheduler-admin"
-    pass: (( vault meta.vault "/role:password" ))
+    # Enable overrides env file > vault > defaults.
+    scheme:   (( params.pg.scheme   || vault.path "db:scheme"   || "postgres" ))
+    username: (( params.pg.username || vault.path "db:username" || "ocf-scheduler" ))
+    password: (( params.pg.password || vault.path "db:password" || "ocf-scheduler" ))
+    hostname: (( params.pg.hostname || vault.path "db:hostname" || "127.0.0.1" ))
+    port:     (( params.pg.port     || vault.path "db:port"     || 5432 ))
+    sslmode:  (( params.pg.sslmode  || vault.path "db:sslmode"  || "disable" ))
+    database: (( params.pg.database || vault.path "db:database" || "ocf-scheduler" ))
   cf:
     exodus: (( concat $GENESIS_EXODUS_MOUNT params.cf.deployment_env "/" params.cf.deployment_type ))
     deployment_name: (( concat params.cf.deployment_env "-" params.cf.deployment_type ))
@@ -63,11 +67,11 @@ instance_groups:
     properties:
       databases:
         roles:
-          - name:     (( grab params.pg.user))
-            password: (( grab params.pg.pass))
+        - name:     (( grab meta.pg.username ))
+          password: (( grab meta.pg.password ))
         databases: 
-        - name: (( grab params.pg.database ))
-        port:   (( grab params.pg.port ))
+        - name: (( grab meta.pg.database ))
+        port:   (( grab meta.pg.port ))
     provides:
       postgres:
         as: scheduler-postgres
