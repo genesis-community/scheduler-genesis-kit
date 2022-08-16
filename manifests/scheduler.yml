@@ -46,7 +46,7 @@ instance_groups:
 
   jobs: 
   - name: scheduler
-    release: scheduler-boshrelease
+    release: ocf-scheduler
     consumes:
       postgres:
         from: scheduler-postgres
@@ -87,7 +87,7 @@ instance_groups:
 
   jobs:
   - name: smoke-tests
-    release: scheduler-boshrelease
+    release: ocf-scheduler
     properties:
       cf:
         username:     (( grab params.cf.username ))
