@@ -6,8 +6,7 @@ params:
     scheme: postgres
     user:   (( vault.path "external_db:username"))
     pass:   (( vault.path "external_db:password"))
-
-    #sslmode: enable
+    # sslmode: enable
 
 instance_groups:
 - name: scheduler
