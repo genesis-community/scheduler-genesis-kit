@@ -25,7 +25,7 @@ EOF
 cf_login() {
   cf_deployment_env="$(exodus cf_deployment_env)"
   cf_deployment_type="$(exodus cf_deployment_type)"
-  cf_exodus="${GENESIS_EXODUS_MOUNT}${cf_deployment_env}/${cf_deployment_type}"
+  cf_exodus_path="${GENESIS_EXODUS_MOUNT}${cf_deployment_env}/${cf_deployment_type}"
   if ! cf plugins | grep -q '^cf-targets'; then
     describe "#Y{The cf-targets plugin does not seem to be installed}"
         echo "Install it first, via 'genesis do $GENESIS_ENVIRONMENT -- setup-cli'"
@@ -33,10 +33,10 @@ cf_login() {
     exit 1
   fi
 
-  system_domain="$(safe get "${cf_exodus}:system_domain")"
+  system_domain="$(safe get "${cf_exodus_path}:system_domain")"
   api_url=https://api.$system_domain
-  username="$(safe get "${cf_exodus}:admin_username")"
-  password="$(safe get "${cf_exodus}:admin_password")"
+  username="$(safe get "${cf_exodus_path}:admin_username")"
+  password="$(safe get "${cf_exodus_path}:admin_password")"
 
   #TODO enfoce ssl validation
   cf api "$api_url" --skip-ssl-validation

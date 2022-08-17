@@ -1,10 +1,10 @@
 name:    ocf-scheduler
-version: 0.0.1
+version: 0.0.16
 author:  Wayne E. Seguin <wayneeseguin@starkandwayne.com>
 docs:    https://github.com/cloudfoundry-community/scheduler-boshrelease
 code:    https://github.com/genesis-community/scheduler-genesis-kit
 
-genesis_version_min: 2.8.4
+genesis_version_min: 2.8.5
 
 credentials:
   +internal-postgres:
@@ -12,10 +12,33 @@ credentials:
       password: random 32 fixed
 
 provided:
-  +external-postgres:
-    role:
+  external-postgres:
+    db:
       keys:
         password:
           prompt: "Password for the external Postgresql Database"
-        username:
+
+  external-postgres-vault: # feature
+    db: # vault suffix path
+      keys: # vault keys hash
+        username: # vault key name & value
           prompt: "Username for the external Postgresql Database"
+          default: "postgres"
+        password:
+          prompt: "Password for the external Postgresql Database"
+        scheme:
+          prompt: "Scheme for the external Postgresql Database"
+          default: "postgres"
+        hostname:
+          prompt: "hostname (or IP) for the external Postgresql Database"
+          default: "127.0.0.1"
+        port:
+          prompt: "Port for the external Postgresql Database"
+          default: "5432"
+        sslmode:
+          prompt: "SSL Mode for the external Postgresql Database (disable/enable)"
+          default: "disable"
+        database:
+          prompt: "Database for the external Postgresql Database"
+          default: "postgres"
+

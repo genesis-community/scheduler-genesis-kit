@@ -24,11 +24,11 @@ provisioning and deploying new environments.
 Features
 -------
 
-## `external-postgres`
+## `external-postgres` and `external-postgres-vault`
 
 By default an internal (colocoated job) postgres is deployed for use. Optionally
 you may configure to use an external PostgreSQL database by adding the 
-`external-postgres` feature together with the following in vault (no defaults):
+`external-postgres-vault` feature together with the following in vault (no defaults).
 
 ```
 secret/$env/vault/db:scheme
@@ -39,6 +39,13 @@ secret/$env/vault/db:port
 secret/$env/vault/db:sslmode
 secret/$env/vault/db:database
 ```
+
+Note that when you do a `new` environment you will be prompted for these and 
+they will get stored in vault directly so you do not need to set them separately.
+
+If you are using another system to generate them and stick into vault 
+(ex: terraform) then it will be directly consumed.
+
 You can do this using `safe` in a single command like so:
 ```sh
 safe set secret/dev/ocf-scheduler/db \
@@ -49,6 +56,20 @@ safe set secret/dev/ocf-scheduler/db \
   scheme="postgres" \
   sslmode="disable" \
   database="scheduler"
+```
+
+for the `external-postgres` feature (no `-vault`) you can override defaults 
+using the environment file's params object:
+
+```yaml
+params:
+  pg_scheme:   "..."
+  pg_username: "..."
+  pg_password: "..."
+  pg_hostname: "..."
+  pg_port:     "..."
+  pg_sslmode:  "..."
+  pg_database: "..."
 ```
 
 ## `cf-route-registrar`

@@ -12,17 +12,17 @@ addons:
       aliases:
       - domain: nats.service.cf.internal
         targets:
-        - deployment: (( grab meta.cf.deployment_name ))
+        - deployment: (( grab meta.cf_deployment_name ))
           domain: bosh
           instance_group: nats
-          network: (( grab params.cf.core_network ))
+          network: (( grab params.cf_core_network ))
           query: '*'
       - domain: _.nats.service.cf.internal
         targets:
-        - deployment: (( grab meta.cf.deployment_name ))
+        - deployment: (( grab meta.cf_deployment_name ))
           domain: bosh
           instance_group: nats
-          network: (( grab params.cf.core_network ))
+          network: (( grab params.cf_core_network ))
           query: _
 ---
 - type: replace
@@ -33,21 +33,21 @@ addons:
     consumes:
       nats-tls:
         from:       nats-tls
-        deployment: (( grab meta.cf.deployment_name ))
+        deployment: (( grab meta.cf_deployment_name ))
     properties:
       nats:
         tls:
           enabled: true
-          client_cert: (( grab params.nats.client_cert ))
-          client_key:  (( grab params.nats.client_key ))
+          client_cert: (( grab params.nats_client_cert ))
+          client_key:  (( grab params.nats_client_key ))
       route_registrar:
         routes:
         - name: scheduler
           port: 8000 # Scheduler API Port
           registration_interval: 10s
           uris:
-            - (( grab params.scheduler.domain ))
-        host: (( grab params.cf.system_domain ))
+            - (( grab params.scheduler_domain ))
+        host: (( grab params.cf_system_domain ))
 - type: replace
   path: /instance_groups/0/jobs/name=bpm?
   value:

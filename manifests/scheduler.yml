@@ -2,38 +2,33 @@
 meta:
   default:
     azs: [z1]
-  pg:
-    scheme:   (( grab params.pg.scheme   || "postgres" ))
-    username: (( grab params.pg.username || "ocf-scheduler" ))
-    password: (( grab params.pg.password || "ocf-scheduler" ))
-    hostname: (( grab params.pg.hostname || "127.0.0.1" ))
-    port:     (( grab params.pg.port     || "5432" ))
-    sslmode:  (( grab params.pg.sslmode  || "disable" ))
-    database: (( grab params.pg.database || "ocf-scheduler" ))
-  cf:
-    exodus: (( concat $GENESIS_EXODUS_MOUNT params.cf.deployment_env "/" params.cf.deployment_type ))
-    deployment_name: (( concat params.cf.deployment_env "-" params.cf.deployment_type ))
-    system_domain: (( vault "secret/exodus/" params.cf.deployment_env "/cf:system_domain" ))
 
-params:
-  cf:
-    deployment_env:  (( grab genesis.env )) # assume the same env name as cf env
-    deployment_type: cf # for crazy people using an non-"cf" cf deployment name
-    core_network:    (( vault meta.cf.exodus ":core_network" ))
-    system_domain:   (( vault meta.cf.exodus ":system_domain" ))
-    system_org:      (( vault meta.cf.exodus ":system_org" ))
-    system_space:    (( vault meta.cf.exodus ":system_space" ))
-    username:        (( vault meta.cf.exodus ":admin_username" ))
-    password:        (( vault meta.cf.exodus ":admin_password" ))
-  network:           (( grab params.cf.core_network ))
-  nats:
-    client_cert: (( vault meta.cf.exodus ":nats_client_cert" ))
-    client_key:  (( vault meta.cf.exodus ":nats_client_key" ))
-  uaa:
-    client_id:     (( vault meta.cf.exodus ":app_scheduler_client" ))
-    client_secret: (( vault meta.cf.exodus ":app_scheduler_secret" ))
-  scheduler:
-    domain:  (( concat "scheduler." meta.cf.system_domain ))
+  cf_exodus_path: (( concat $GENESIS_EXODUS_MOUNT params.cf_deployment_env "/" params.cf_deployment_type ))
+  cf_deployment_name: (( concat params.cf_deployment_env "-" params.cf_deployment_type ))
+  cf_system_domain: (( vault "secret/exodus/" params.cf_deployment_env "/cf:system_domain" ))
+
+params: # NOTE: Contract with kit & genesis is that params are flat for kits.
+  cf_deployment_env:  (( grab genesis.env )) # assume the same env name as cf env
+  cf_deployment_type: cf # for crazy people using an non-"cf" cf deployment name
+  cf_core_network:    (( vault meta.cf_exodus_path ":core_network" ))
+  cf_system_domain:   (( vault meta.cf_exodus_path ":system_domain" ))
+  cf_system_org:      (( vault meta.cf_exodus_path ":system_org" ))
+  cf_system_space:    (( vault meta.cf_exodus_path ":system_space" ))
+  cf_username:        (( vault meta.cf_exodus_path ":admin_username" ))
+  cf_password:        (( vault meta.cf_exodus_path ":admin_password" ))
+  network:            (( grab params.cf_core_network ))
+  nats_client_cert:   (( vault meta.cf_exodus_path ":nats_client_cert" ))
+  nats_client_key:    (( vault meta.cf_exodus_path ":nats_client_key" ))
+  uaa_client_id:      (( vault meta.cf_exodus_path ":app_scheduler_client" ))
+  uaa_client_secret:  (( vault meta.cf_exodus_path ":app_scheduler_secret" ))
+  scheduler_domain:   (( concat "scheduler." meta.cf_system_domain ))
+  pg_scheme:   "postgres" 
+  pg_username: "ocf-scheduler" 
+  pg_password: "ocf-scheduler" 
+  pg_hostname: "127.0.0.1" 
+  pg_port:     "5432" 
+  pg_sslmode:  "disable" 
+  pg_database: "ocf-scheduler" 
 
 instance_groups:
 - name:      scheduler
@@ -54,23 +49,23 @@ instance_groups:
     properties:
       scheduler:
         uaa:
-          client_id: (( grab params.uaa.client_id ))
-          client_secret: (( grab params.uaa.client_secret ))
-          endpoint: (( concat "https://uaa."  params.cf.system_domain ))
+          client_id: (( grab params.uaa_client_id ))
+          client_secret: (( grab params.uaa_client_secret ))
+          endpoint: (( concat "https://uaa."  params.cf_system_domain ))
         cf:
-          api: (( concat "https://api." params.cf.system_domain ))
+          api: (( concat "https://api." params.cf_system_domain ))
         postgres:
-          uri: (( concat "postgres://" meta.pg.username ":" meta.pg.password "@" meta.pg.hostname ":" meta.pg.port "/" meta.pg.database "?sslmode=" meta.pg.sslmode ))
+          uri: (( concat "postgres://" params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
 
   - name: postgres
     properties:
       databases:
         roles:
-        - name:     (( grab meta.pg.username ))
-          password: (( grab meta.pg.password ))
+        - name:     (( grab params.pg_username ))
+          password: (( grab params.pg_password ))
         databases: 
-        - name: (( grab meta.pg.database ))
-        port:   (( grab meta.pg.port ))
+        - name: (( grab params.pg_database ))
+        port:   (( grab params.pg_port ))
     provides:
       postgres:
         as: scheduler-postgres
@@ -90,11 +85,11 @@ instance_groups:
     release: ocf-scheduler
     properties:
       cf:
-        username:     (( grab params.cf.username ))
-        password:     (( grab params.cf.password ))
-        api:          (( concat "https://api." params.cf.system_domain ))
-        organization: (( grab params.cf.system_org ))
-        space:        (( grab params.cf.system_space ))
+        username:     (( grab params.cf_username ))
+        password:     (( grab params.cf_password ))
+        api:          (( concat "https://api." params.cf_system_domain ))
+        organization: (( grab params.cf_system_org ))
+        space:        (( grab params.cf_system_space ))
 
 name: scheduler
 

@@ -8,13 +8,15 @@ manifests+=( manifests/scheduler.yml manifests/releases/scheduler.yml )
 
 if want_feature "external-postgres" ; then
   manifests+=( manifests/external-postgres.yml )
+elif want_feature "external-postgres-vault" ; then
+  manifests+=( manifests/external-postgres-vault.yml )
 else
   manifests+=( manifests/releases/postgres.yml )
 fi
 
 for want in $GENESIS_REQUESTED_FEATURES; do
   case "$want" in
-    (external-postgres|+internal-postgres) # Covered above
+    (external-postgres*|+internal-postgres) # Covered above
       true
       ;;
     (cf-route-registrar)
