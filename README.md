@@ -39,20 +39,16 @@ secret/$env/vault/db:port
 secret/$env/vault/db:sslmode
 secret/$env/vault/db:database
 ```
-
-You can also override in the environment file directly however this is not 
-advised for production environments.
-
-```yaml
-params:
-  pg:
-    scheme:   "postgres"
-    username: ""
-    password: ""
-    hostname: ""
-    port:     "5432"
-    sslmode:  "disable"
-    database: ""
+You can do this using `safe` in a single command like so:
+```sh
+safe set secret/dev/ocf-scheduler/db \
+  hostname="rds-scheduler-20220817135133803000000001.amzdohuu4x1g.us-west-2.rds.amazonaws.com" \
+  port="5432" \
+  username="scheduler" \
+  password="U4k294KkhuNEe9ZaGoe15tGywr5o" \
+  scheme="postgres" \
+  sslmode="disable" \
+  database="scheduler"
 ```
 
 ## `cf-route-registrar`

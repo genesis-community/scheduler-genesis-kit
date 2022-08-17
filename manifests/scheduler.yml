@@ -7,7 +7,7 @@ meta:
     username: (( grab params.pg.username || "ocf-scheduler" ))
     password: (( grab params.pg.password || "ocf-scheduler" ))
     hostname: (( grab params.pg.hostname || "127.0.0.1" ))
-    port:     (( grab params.pg.port     || 5432 ))
+    port:     (( grab params.pg.port     || "5432" ))
     sslmode:  (( grab params.pg.sslmode  || "disable" ))
     database: (( grab params.pg.database || "ocf-scheduler" ))
   cf:

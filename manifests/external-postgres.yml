@@ -1,14 +1,16 @@
 ---
 meta:
   pg:
-    scheme:   (( grab params.pg.scheme   || vault meta.vault "db:scheme"   ))
-    username: (( grab params.pg.username || vault meta.vault "db:username" ))
-    password: (( grab params.pg.password || vault meta.vault "db:password" ))
-    hostname: (( grab params.pg.hostname || vault meta.vault "db:hostname" ))
-    port:     (( grab params.pg.port     || vault meta.vault "db:port"     ))
-    sslmode:  (( grab params.pg.sslmode  || vault meta.vault "db:sslmode"  ))
-    database: (( grab params.pg.database || vault meta.vault "db:database" ))
+    scheme:   (( vault meta.vault "/db:scheme"   ))
+    username: (( vault meta.vault "/db:username" ))
+    password: (( vault meta.vault "/db:password" ))
+    hostname: (( vault meta.vault "/db:hostname" ))
+    port:     (( vault meta.vault "/db:port"     ))
+    sslmode:  (( vault meta.vault "/db:sslmode"  ))
+    database: (( vault meta.vault "/db:database" ))
+
 instance_groups:
 - name: scheduler
   jobs:
   - (( delete "postgres" ))
+
