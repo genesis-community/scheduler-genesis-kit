@@ -14,7 +14,7 @@ fi
 
 for want in $GENESIS_REQUESTED_FEATURES; do
   case "$want" in
-    (external-postgres|internal-postgres) # Covered above
+    (external-postgres|+internal-postgres) # Covered above
       true
       ;;
     (cf-route-registrar)
