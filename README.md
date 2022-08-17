@@ -28,15 +28,31 @@ Features
 
 By default an internal (colocoated job) postgres is deployed for use. Optionally
 you may configure to use an external PostgreSQL database by adding the 
-`external-postgres` feature together with the following parameters:
+`external-postgres` feature together with the following in vault (no defaults):
 
 ```
+secret/$env/vault/db:scheme
+secret/$env/vault/db:username
+secret/$env/vault/db:password
+secret/$env/vault/db:hostname
+secret/$env/vault/db:port
+secret/$env/vault/db:sslmode
+secret/$env/vault/db:database
+```
+
+You can also override in the environment file directly however this is not 
+advised for production environments.
+
+```yaml
 params:
   pg:
-    host: "..."
-    port: "5432"
-    user: "..."
-    pass: "..."
+    scheme:   "postgres"
+    username: ""
+    password: ""
+    hostname: ""
+    port:     "5432"
+    sslmode:  "disable"
+    database: ""
 ```
 
 ## `cf-route-registrar`

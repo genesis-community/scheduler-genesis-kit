@@ -26,13 +26,13 @@ addons:
           query: _
 ---
 - type: replace
-  path: /instance_groups/0/jobs/-
+  path: /instance_groups/0/jobs/name=route_registrar?
   value:
     name: route_registrar
     release: routing
     consumes:
-      nats-tls:              # vs nats
-        from:       nats-tls # vs nats
+      nats-tls:
+        from:       nats-tls
         deployment: (( grab meta.cf.deployment_name ))
     properties:
       nats:
@@ -49,7 +49,7 @@ addons:
             - (( grab params.scheduler.domain ))
         host: (( grab params.cf.system_domain ))
 - type: replace
-  path: /instance_groups/0/jobs/-
+  path: /instance_groups/0/jobs/name=bpm?
   value:
     name: bpm
     release: bpm

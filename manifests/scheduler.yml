@@ -3,14 +3,13 @@ meta:
   default:
     azs: [z1]
   pg:
-    # Enable overrides env file > vault > defaults.
-    scheme:   (( params.pg.scheme   || vault.path "db:scheme"   || "postgres" ))
-    username: (( params.pg.username || vault.path "db:username" || "ocf-scheduler" ))
-    password: (( params.pg.password || vault.path "db:password" || "ocf-scheduler" ))
-    hostname: (( params.pg.hostname || vault.path "db:hostname" || "127.0.0.1" ))
-    port:     (( params.pg.port     || vault.path "db:port"     || 5432 ))
-    sslmode:  (( params.pg.sslmode  || vault.path "db:sslmode"  || "disable" ))
-    database: (( params.pg.database || vault.path "db:database" || "ocf-scheduler" ))
+    scheme:   (( grab params.pg.scheme   || "postgres" ))
+    username: (( grab params.pg.username || "ocf-scheduler" ))
+    password: (( grab params.pg.password || "ocf-scheduler" ))
+    hostname: (( grab params.pg.hostname || "127.0.0.1" ))
+    port:     (( grab params.pg.port     || 5432 ))
+    sslmode:  (( grab params.pg.sslmode  || "disable" ))
+    database: (( grab params.pg.database || "ocf-scheduler" ))
   cf:
     exodus: (( concat $GENESIS_EXODUS_MOUNT params.cf.deployment_env "/" params.cf.deployment_type ))
     deployment_name: (( concat params.cf.deployment_env "-" params.cf.deployment_type ))
