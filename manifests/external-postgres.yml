@@ -1,15 +1,14 @@
 ---
 params:
-  pg_scheme:   (( vault meta.vault "/db:scheme"   ))
   pg_username: (( vault meta.vault "/db:username" ))
   pg_password: (( vault meta.vault "/db:password" ))
-  pg_hostname: (( vault meta.vault "/db:hostname" ))
-  pg_port:     (( vault meta.vault "/db:port"     ))
-  pg_sslmode:  (( vault meta.vault "/db:sslmode"  ))
-  pg_database: (( vault meta.vault "/db:database" ))
 
 instance_groups:
 - name: scheduler
   jobs:
   - (( delete "postgres" ))
+
+---
+- type: remove
+  path: /instance_groups/0/jobs/name=scheduler/consumes
 

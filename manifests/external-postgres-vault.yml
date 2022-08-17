@@ -13,3 +13,7 @@ instance_groups:
   jobs:
   - (( delete "postgres" ))
 
+---
+- type: remove
+  path: /instance_groups/0/jobs/name=scheduler/consumes
+
