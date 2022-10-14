@@ -88,6 +88,10 @@ case $GENESIS_ADDON_SCRIPT in
 (list)
   list
   ;;
+# TODO: 
+# (smoke-tests)
+#   smoke_tests
+# ;;
 
 (setup-cf-plugin)
   add_plugin "$@"

@@ -4,14 +4,17 @@ set -eu
 
 declare -a manifests
 
-manifests+=( manifests/scheduler.yml manifests/releases/scheduler.yml )
+manifests+=( 
+  "manifests/scheduler.yml"
+  "manifests/releases/scheduler.yml"
+)
 
 if want_feature "external-postgres" ; then
-  manifests+=( manifests/external-postgres.yml )
+  manifests+=( "manifests/external-postgres.yml" )
 elif want_feature "external-postgres-vault" ; then
-  manifests+=( manifests/external-postgres-vault.yml )
+  manifests+=( "manifests/external-postgres-vault.yml" )
 else
-  manifests+=( manifests/releases/postgres.yml )
+  manifests+=( "manifests/releases/postgres.yml" )
 fi
 
 for want in $GENESIS_REQUESTED_FEATURES; do
@@ -20,7 +23,10 @@ for want in $GENESIS_REQUESTED_FEATURES; do
       true
       ;;
     (cf-route-registrar)
-      manifests+=( manifests/releases/routing.yml manifests/cf-route-registrar.yml )
+      manifests+=( 
+        "manifests/releases/routing.yml"
+        "manifests/cf-route-registrar.yml"
+      )
       ;;
     (*)
       if [[ -f "$GENESIS_ROOT/ops/$want.yml" ]] ; then
@@ -33,5 +39,9 @@ for want in $GENESIS_REQUESTED_FEATURES; do
       ;;
   esac
 done
+
+if want_feature "ocfp" ; then # Merged last to ensure overrides all others.
+  manifests+=( "manifests/ocfp.yml" )
+fi
 
 echo ${manifests[@]}

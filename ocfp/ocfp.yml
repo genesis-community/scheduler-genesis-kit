@@ -1,0 +1,30 @@
+---
+meta:
+  ocfp:
+    env:
+      scale: (( grab params.env.scale || "dev" ))
+
+    vault:
+      tf: (( concat genesis.secrets_mount "tf/" genesis.vault_env ))
+
+    certs:
+      trusted:
+        - (( vault genesis.secrets_mount "certs/org:ca" )) # Organization CA, if exists
+        - (( vault genesis.secrets_mount "certs/dbs:ca" )) # External Databases CA
+
+  stemcell:
+    name:    (( grab params.stemcell_name    || "default" ))
+    os:      (( grab params.stemcell_os      || "ubuntu-bionic" ))
+    version: (( grab params.stemcell_version || "latest" ))
+
+  scheduler:
+    azs: # TODO: This should be based on IaaS vvv
+      - (( concat genesis.env "-z1" ))
+      - (( concat genesis.env "-z2" ))
+      - (( concat genesis.env "-z3" ))
+
+    disk_type: (( concat "app-scheduler-" meta.ocfp.env.scale ))
+    vm_type:   (( concat "app-scheduler-" meta.ocfp.env.scale ))
+    networks:
+      - name: (( concat genesis.env "-scheduler" ))
+
