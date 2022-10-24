@@ -1,22 +1,24 @@
 ---
 meta:
   cf:
-    deployment_env:  (( grab genesis.env )) # assume the same env name as cf env
-    deployment_type: (( grab params.cf_deployment_type || "cf" )) # for crazy people using an non-"cf" cf deployment name
-    exodus_path:     (( concat $GENESIS_EXODUS_MOUNT params.cf_deployment_env "/" params.cf_deployment_type ))
-    deployment_name: (( concat params.cf_deployment_env "-" params.cf_deployment_type ))
+    exodus_path:     (( concat $GENESIS_EXODUS_MOUNT genesis.env "/cf" ))
+    deployment_name: (( concat genesis.env "-cf" ))
     core_network:    (( vault meta.cf.exodus_path ":core_network" ))
+
     admin:
       username:      (( vault meta.cf.exodus_path ":admin_username" ))
       password:      (( vault meta.cf.exodus_path ":admin_password" ))
+
     system:
       domain:        (( vault meta.cf.exodus_path ":system_domain" ))
       org:           (( vault meta.cf.exodus_path ":system_org" ))
       space:         (( vault meta.cf.exodus_path ":system_space" ))
       api:           (( concat "https://api." meta.cf.system.domain ))
+
     nats:
       client_cert:   (( vault meta.cf.exodus_path ":nats_client_cert" ))
       client_key:    (( vault meta.cf.exodus_path ":nats_client_key" ))
+
     uaa:
       client_id:     (( vault meta.cf.exodus_path ":app_scheduler_client" ))
       client_secret: (( vault meta.cf.exodus_path ":app_scheduler_secret" ))
@@ -24,11 +26,17 @@ meta:
 
   scheduler:
     domain:    (( concat "scheduler." meta.cf.system_domain ))
+
     networks: 
       - name:  (( grab params.network || "default" ))
+
     azs:
       - (( grab params.availability_zones || "z1"))
+
     vm_type: (( grab params.vm_type || "default" ))
+
+    smoke-tests:
+      vm_type: (( grab params.vm_type || "errand" )) 
 
   db:
     scheme:   "postgres" 
@@ -53,8 +61,9 @@ instance_groups:
 - name:      scheduler
   instances: 1
   azs:      (( grab meta.scheduler.azs ))
-  stemcell: (( grab meta.scheduler.stemcell ))
+  stemcell: (( grab meta.scheduler.stemcell.name ))
   networks: (( grab meta.scheduler.networks ))
+  vm_type:  (( grab meta.scheduler.vm_type ))
 
   jobs: 
   - name: scheduler
@@ -93,7 +102,7 @@ instance_groups:
   azs:       (( grab meta.scheduler.azs ))
   stemcell:  default
   networks:  (( grab meta.scheduler.networks ))
-  vm_type:   (( grab meta.scheudler.vm_type ))
+  vm_type:   (( grab meta.scheduler.smoke-tests.vm_type ))
   lifecycle: errand
 
   jobs:

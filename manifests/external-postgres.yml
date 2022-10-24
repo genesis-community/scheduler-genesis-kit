@@ -5,8 +5,8 @@ params:
   pg_password: (( grab params.db.password || meta.db.password )) 
   pg_hostname: (( grab params.db.hostname || meta.db.hostname )) 
   pg_port:     (( grab params.db.port     || meta.db.port     )) 
-  pg_sslmode:  (( grab params.db.sslmode  || meta.db.sslmode  )) 
   pg_database: (( grab params.db.database || meta.db.database )) 
+  pg_sslmode:  (( grab params.db.sslmode  || meta.db.sslmode  )) 
 
 instance_groups:
 - name: scheduler

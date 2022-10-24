@@ -1,13 +1,13 @@
 ---
 meta:
   db:
-    scheme:   (( vault meta.vault "db/scheme" ))
-    username: (( vault meta.vault "db/username" ))
-    password: (( vault meta.vault "db/password" ))
-    hostname: (( vault meta.vault "db/hostname" ))
-    port:     (( vault meta.vault "db/port" ))
-    sslmode:  (( vault meta.vault "db/sslmode" ))
-    database: (( vault meta.vault "db/database" ))
+    scheme:   (( vault meta.vault "/db/scheme" ))
+    username: (( vault meta.vault "/db/username" ))
+    password: (( vault meta.vault "/db/password" ))
+    hostname: (( vault meta.vault "/db/hostname" ))
+    port:     (( vault meta.vault "/db/port" ))
+    database: (( vault meta.vault "/db/database" ))
+    sslmode:  "verify-ca"
 
 params:
   pg_scheme:   (( grab meta.db.scheme   ))

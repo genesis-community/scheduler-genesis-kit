@@ -28,6 +28,9 @@ for want in $GENESIS_REQUESTED_FEATURES; do
         "manifests/cf-route-registrar.yml"
       )
       ;;
+    (ocfp)
+      true
+      ;;
     (*)
       if [[ -f "$GENESIS_ROOT/ops/$want.yml" ]] ; then
         manifests+=( "$GENESIS_ROOT/ops/$want.yml" )

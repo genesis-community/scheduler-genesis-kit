@@ -13,13 +13,13 @@ credentials:
 
 provided:
   external-postgres:
-    db:
+    db/scheduler:
       keys:
         password:
           prompt: "Password for the external Postgresql Database"
 
   external-postgres-vault: # feature
-    db: # vault suffix path
+    db/scheduler: # vault suffix path
       keys: # vault keys hash
         username: # vault key name & value
           prompt: "Username for the external Postgresql Database"
