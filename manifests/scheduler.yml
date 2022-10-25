@@ -25,7 +25,7 @@ meta:
       endpoint:      (( concat "https://uaa."  meta.cf.system.domain ))
 
   scheduler:
-    domain:    (( concat "scheduler." meta.cf.system_domain ))
+    domain:    (( concat "scheduler." meta.cf.system.domain ))
 
     networks: 
       - name:  (( grab params.network || "default" ))

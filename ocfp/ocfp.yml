@@ -34,14 +34,14 @@ instance_groups:
   - name: scheduler
     networks:
       - (( replace ))
-      - (( concat genesis.env "-ocf" ))
+      -  name: (( concat genesis.env "-ocf" ))
     azs: (( grab meta.scheduler.azs ))
     vm_type: (( grab meta.scheduler.vm_type ))
 
   - name: smoke-tests
     networks:
       - (( replace ))
-      - (( concat genesis.env "-ocf" ))
+      -  name: (( concat genesis.env "-ocf" ))
     azs: (( grab meta.scheduler.azs ))
     vm_type: (( concat "errand-" meta.ocfp.env.scale ))
 
