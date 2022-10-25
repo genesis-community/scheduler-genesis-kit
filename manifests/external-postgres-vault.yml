@@ -1,12 +1,12 @@
 ---
 meta:
   db:
-    scheme:   (( vault meta.vault "/db/scheme" ))
-    username: (( vault meta.vault "/db/username" ))
-    password: (( vault meta.vault "/db/password" ))
-    hostname: (( vault meta.vault "/db/hostname" ))
-    port:     (( vault meta.vault "/db/port" ))
-    database: (( vault meta.vault "/db/database" ))
+    scheme:   (( vault meta.vault "/db/scheduler:scheme" ))
+    username: (( vault meta.vault "/db/scheduler:username" ))
+    password: (( vault meta.vault "/db/scheduler:password" ))
+    hostname: (( vault meta.vault "/db/scheduler:hostname" ))
+    port:     (( vault meta.vault "/db/scheduler:port" ))
+    database: (( vault meta.vault "/db/scheduler:database" ))
     sslmode:  "verify-ca"
 
 params:
