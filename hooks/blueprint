@@ -44,7 +44,7 @@ for want in $GENESIS_REQUESTED_FEATURES; do
 done
 
 if want_feature "ocfp" ; then # Merged last to ensure overrides all others.
-  manifests+=( "manifests/ocfp.yml" )
+  manifests+=( "ocfp/ocfp.yml" )
 fi
 
 echo ${manifests[@]}
