@@ -22,7 +22,7 @@ meta:
     vm_type:   (( concat "app-scheduler-" meta.ocfp.env.scale ))
 
     networks:
-      - name: (( concat genesis.env "-scheduler" ))
+      - name: (( concat genesis.env "-ocf" ))
 
     stemcell:
       name:    (( grab params.stemcell_name    || "default" ))
