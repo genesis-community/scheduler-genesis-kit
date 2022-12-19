@@ -1,0 +1,47 @@
+---
+meta:
+  ocfp:
+    env:
+      scale: (( grab params.ocfp_env_scale || "dev" ))
+
+    vault:
+      tf: (( concat genesis.secrets_mount "tf/" genesis.vault_env ))
+
+    certs:
+      trusted:
+        - (( vault genesis.secrets_mount "certs/org:ca" )) # Organization CA, if exists
+        - (( vault genesis.secrets_mount "certs/dbs:ca" )) # External Databases CA
+
+  scheduler:
+    azs: # TODO: This should be based on IaaS vvv
+      - (( concat genesis.env "-z1" ))
+      - (( concat genesis.env "-z2" ))
+      - (( concat genesis.env "-z3" ))
+
+    disk_type: (( concat "app-scheduler-" meta.ocfp.env.scale ))
+    vm_type:   (( concat "app-scheduler-" meta.ocfp.env.scale ))
+
+    networks:
+      - name: (( concat genesis.env "-ocf" ))
+
+    stemcell:
+      name:    (( grab params.stemcell_name    || "default" ))
+      os:      (( grab params.stemcell_os      || "ubuntu-bionic" ))
+      version: (( grab params.stemcell_version || "latest" ))
+
+---
+instance_groups:
+  - name: scheduler
+    networks:
+      - (( replace ))
+      -  name: (( concat genesis.env "-ocf" ))
+    azs: (( grab meta.scheduler.azs ))
+    vm_type: (( grab meta.scheduler.vm_type ))
+
+  - name: smoke-tests
+    networks:
+      - (( replace ))
+      -  name: (( concat genesis.env "-ocf" ))
+    azs: (( grab meta.scheduler.azs ))
+    vm_type: (( concat "errand-" meta.ocfp.env.scale ))
+

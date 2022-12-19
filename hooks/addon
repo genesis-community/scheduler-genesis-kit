@@ -84,24 +84,20 @@ bind_scheduler() {
   exit 0
 }
 
+smoke::tests() {
+  genesis "$GENESIS_ENVIRONMENT" bosh run-errand smoke-tests
+}
+
 case $GENESIS_ADDON_SCRIPT in
-(list)
-  list
-  ;;
-
-(setup-cf-plugin)
-  add_plugin "$@"
-  ;;
-
-(bind|bind-scheduler)
-  bind_scheduler
-  ;;
-
-(*)
-  describe >&2 "" "#R{[ERROR]} No such addon: $GENESIS_ADDON_SCRIPT"
-  list
-  exit 1
-  ;;
+  (list)                list ;;
+  (smoke-tests)         smoke::tests ;;
+  (setup-cf-plugin)     add_plugin "$@" ;;
+  (bind|bind-scheduler) bind_scheduler ;;
+  (*)
+    describe >&2 "" "#R{[ERROR]} No such addon: $GENESIS_ADDON_SCRIPT"
+    list
+    exit 1
+    ;;
 esac
 
 exit 0

@@ -1,43 +1,69 @@
 ---
 meta:
-  default:
-    azs: [z1]
+  cf:
+    exodus_path:     (( concat $GENESIS_EXODUS_MOUNT genesis.env "/cf" ))
+    deployment_name: (( concat genesis.env "-cf" ))
+    core_network:    (( vault meta.cf.exodus_path ":core_network" ))
 
-  cf_exodus_path: (( concat $GENESIS_EXODUS_MOUNT params.cf_deployment_env "/" params.cf_deployment_type ))
-  cf_deployment_name: (( concat params.cf_deployment_env "-" params.cf_deployment_type ))
-  cf_system_domain: (( vault "secret/exodus/" params.cf_deployment_env "/cf:system_domain" ))
+    admin:
+      username:      (( vault meta.cf.exodus_path ":admin_username" ))
+      password:      (( vault meta.cf.exodus_path ":admin_password" ))
+
+    system:
+      domain:        (( vault meta.cf.exodus_path ":system_domain" ))
+      org:           (( vault meta.cf.exodus_path ":system_org" ))
+      space:         (( vault meta.cf.exodus_path ":system_space" ))
+      api:           (( concat "https://api." meta.cf.system.domain ))
+
+    nats:
+      client_cert:   (( vault meta.cf.exodus_path ":nats_client_cert" ))
+      client_key:    (( vault meta.cf.exodus_path ":nats_client_key" ))
+
+    uaa:
+      client_id:     (( vault meta.cf.exodus_path ":app_scheduler_client" ))
+      client_secret: (( vault meta.cf.exodus_path ":app_scheduler_secret" ))
+      endpoint:      (( concat "https://uaa."  meta.cf.system.domain ))
+
+  scheduler:
+    domain:    (( concat "scheduler." meta.cf.system.domain ))
+
+    networks: 
+      - name:  (( grab params.network || "default" ))
+
+    azs:
+      - (( grab params.availability_zones || "z1"))
+
+    vm_type: (( grab params.vm_type || "default" ))
+
+    smoke-tests:
+      vm_type: (( grab params.vm_type || "errand" )) 
+
+  db:
+    scheme:   "postgres" 
+    username: "scheduler" 
+    password: "scheduler" 
+    hostname: "127.0.0.1" 
+    port:     "5432" 
+    sslmode:  "disable" 
+    database: "scheduler" 
 
 params: # NOTE: Contract with kit & genesis is that params are flat for kits.
-  cf_deployment_env:  (( grab genesis.env )) # assume the same env name as cf env
-  cf_deployment_type: cf # for crazy people using an non-"cf" cf deployment name
-  cf_core_network:    (( vault meta.cf_exodus_path ":core_network" ))
-  cf_system_domain:   (( vault meta.cf_exodus_path ":system_domain" ))
-  cf_system_org:      (( vault meta.cf_exodus_path ":system_org" ))
-  cf_system_space:    (( vault meta.cf_exodus_path ":system_space" ))
-  cf_username:        (( vault meta.cf_exodus_path ":admin_username" ))
-  cf_password:        (( vault meta.cf_exodus_path ":admin_password" ))
-  network:            (( grab params.cf_core_network ))
-  nats_client_cert:   (( vault meta.cf_exodus_path ":nats_client_cert" ))
-  nats_client_key:    (( vault meta.cf_exodus_path ":nats_client_key" ))
-  uaa_client_id:      (( vault meta.cf_exodus_path ":app_scheduler_client" ))
-  uaa_client_secret:  (( vault meta.cf_exodus_path ":app_scheduler_secret" ))
-  scheduler_domain:   (( concat "scheduler." meta.cf_system_domain ))
-  pg_scheme:   "postgres" 
-  pg_username: "ocf-scheduler" 
-  pg_password: "ocf-scheduler" 
-  pg_hostname: "127.0.0.1" 
-  pg_port:     "5432" 
-  pg_sslmode:  "disable" 
-  pg_database: "ocf-scheduler" 
+  pg_scheme:   (( grab meta.db.scheme ))
+  pg_username: (( grab meta.db.username ))
+  pg_password: (( grab meta.db.password ))
+  pg_hostname: (( grab meta.db.hostname ))
+  pg_port:     (( grab meta.db.port ))
+  pg_sslmode:  (( grab meta.db.sslmode ))
+  pg_database: (( grab meta.db.database ))
+  pg_uri: (( concat "postgres://" params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
 
 instance_groups:
 - name:      scheduler
   instances: 1
-  azs:      (( grab params.availability_zones || meta.default.azs ))
-  stemcell: default
-  networks: 
-  - name:  (( grab params.network || "default" ))
-  vm_type: (( grab params.vm_type || "default" ))
+  azs:      (( grab meta.scheduler.azs ))
+  stemcell: (( grab meta.scheduler.stemcell.name ))
+  networks: (( grab meta.scheduler.networks ))
+  vm_type:  (( grab meta.scheduler.vm_type ))
 
   jobs: 
   - name: scheduler
@@ -49,13 +75,13 @@ instance_groups:
     properties:
       scheduler:
         uaa:
-          client_id: (( grab params.uaa_client_id ))
-          client_secret: (( grab params.uaa_client_secret ))
-          endpoint: (( concat "https://uaa."  params.cf_system_domain ))
+          client_id:     (( grab meta.cf.uaa.client_id ))
+          client_secret: (( grab meta.cf.uaa.client_secret ))
+          endpoint:      (( grab meta.cf.uaa.endpoint ))
         cf:
-          api: (( concat "https://api." params.cf_system_domain ))
+          api: (( grab meta.cf.system.api ))
         postgres:
-          uri: (( concat "postgres://" params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
+          uri: (( grab params.pg_uri ))
 
   - name: postgres
     properties:
@@ -73,11 +99,10 @@ instance_groups:
 
 - name: smoke-tests
   instances: 1
-  azs:       (( grab params.availability_zones || meta.default.azs ))
+  azs:       (( grab meta.scheduler.azs ))
   stemcell:  default
-  networks:  
-  - name:    (( grab params.network || "default" ))
-  vm_type:   (( grab params.vm_type || "default" ))
+  networks:  (( grab meta.scheduler.networks ))
+  vm_type:   (( grab meta.scheduler.smoke-tests.vm_type ))
   lifecycle: errand
 
   jobs:
@@ -85,11 +110,11 @@ instance_groups:
     release: ocf-scheduler
     properties:
       cf:
-        username:     (( grab params.cf_username ))
-        password:     (( grab params.cf_password ))
-        api:          (( concat "https://api." params.cf_system_domain ))
-        organization: (( grab params.cf_system_org ))
-        space:        (( grab params.cf_system_space ))
+        username:     (( grab meta.cf.admin.username ))
+        password:     (( grab meta.cf.admin.password ))
+        api:          (( grab meta.cf.system.api ))
+        organization: (( grab meta.cf.system.org ))
+        space:        (( grab meta.cf.system.space ))
 
 name: scheduler
 

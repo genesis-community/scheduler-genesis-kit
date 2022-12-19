@@ -2,8 +2,13 @@
 
 echo "$GENESIS_REQUESTED_FEATURES"
 
-want_feature external-postgres || 
-  want_feature external-postgres-vault || 
-  echo "+internal-postgres"
+if want_feature "ocfp"; then
+  echo "external-postgres-vault"
+  echo "cf-route-registrar"
+else
+  want_feature external-postgres || 
+    want_feature external-postgres-vault || 
+    echo "+internal-postgres"
+fi
 
 exit 0
