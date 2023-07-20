@@ -27,25 +27,25 @@ meta:
   scheduler:
     domain:    (( concat "scheduler." meta.cf.system.domain ))
 
-    networks: 
-      - name:  (( grab params.network || "default" ))
+    networks:
+    - name:  (( grab params.network || "default" ))
 
     azs:
-      - (( grab params.availability_zones || "z1"))
+    - (( grab params.availability_zones || "z1"))
 
     vm_type: (( grab params.vm_type || "default" ))
 
     smoke-tests:
-      vm_type: (( grab params.vm_type || "errand" )) 
+      vm_type: (( grab params.vm_type || "errand" ))
 
   db:
-    scheme:   "postgres" 
-    username: "scheduler" 
-    password: "scheduler" 
-    hostname: "127.0.0.1" 
-    port:     "5432" 
-    sslmode:  "disable" 
-    database: "scheduler" 
+    scheme:   "postgres"
+    username: "scheduler"
+    password: "scheduler"
+    hostname: "127.0.0.1"
+    port:     "5432"
+    sslmode:  "disable"
+    database: "scheduler"
 
 params: # NOTE: Contract with kit & genesis is that params are flat for kits.
   pg_scheme:   (( grab meta.db.scheme ))
@@ -61,11 +61,11 @@ instance_groups:
 - name:      scheduler
   instances: 1
   azs:      (( grab meta.scheduler.azs ))
-  stemcell: (( grab meta.scheduler.stemcell.name ))
+  stemcell: (( grab meta.scheduler.stemcell.name || "default" ))
   networks: (( grab meta.scheduler.networks ))
   vm_type:  (( grab meta.scheduler.vm_type ))
 
-  jobs: 
+  jobs:
   - name: scheduler
     release: ocf-scheduler
     consumes:
@@ -89,7 +89,7 @@ instance_groups:
         roles:
         - name:     (( grab params.pg_username ))
           password: (( grab params.pg_password ))
-        databases: 
+        databases:
         - name: (( grab params.pg_database ))
         port:   (( grab params.pg_port ))
     provides:
@@ -127,7 +127,6 @@ update:
   update_watch_time: 5000-600000
 
 stemcells:
-- alias:   default
-  os:      (( grab params.stemcell_os      || "ubuntu-bionic" ))
+- alias:  default
+  os:      (( grab params.stemcell_os      || "ubuntu-jammy" ))
   version: (( grab params.stemcell_version || "latest" ))
-
