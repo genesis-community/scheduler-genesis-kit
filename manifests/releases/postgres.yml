@@ -1,5 +1,5 @@
 releases:
 - name:    "postgres"
-  version: "44"
-  sha1:    "582b1de9522077102dfa44ff7164cd8f499dbfc8"
-  url:     "https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=44"
+  version: "51"
+  url:     "https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=51"
+  sha1:    "84ca2cd0773d2bcb92872773a330a5c087d9eebb"
