@@ -40,7 +40,7 @@ meta:
 
     worker_count: (( grab params.worker_count || 10 ))
 
-    log_level: (( grab params.log_level || info ))
+    log_level: (( grab params.log_level || "info" ))
 
   db:
     scheme: "postgres"
