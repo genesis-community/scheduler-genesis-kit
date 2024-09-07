@@ -81,7 +81,7 @@ information required to register the scheduler API with CF at
 
 ## Number of Workers
 
-The number of works defaults to 10 and can be set using the `worker_count` param, for example:
+The number of works defaults to 20 and can be set using the `worker_count` param, for example:
 ```yaml
 params:
   worker_count: 40
