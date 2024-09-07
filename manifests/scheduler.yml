@@ -1,132 +1,138 @@
 ---
 meta:
   cf:
-    exodus_path:     (( concat $GENESIS_EXODUS_MOUNT genesis.env "/cf" ))
+    exodus_path: (( concat $GENESIS_EXODUS_MOUNT genesis.env "/cf" ))
     deployment_name: (( concat genesis.env "-cf" ))
-    core_network:    (( vault meta.cf.exodus_path ":core_network" ))
+    core_network: (( vault meta.cf.exodus_path ":core_network" ))
 
     admin:
-      username:      (( vault meta.cf.exodus_path ":admin_username" ))
-      password:      (( vault meta.cf.exodus_path ":admin_password" ))
+      username: (( vault meta.cf.exodus_path ":admin_username" ))
+      password: (( vault meta.cf.exodus_path ":admin_password" ))
 
     system:
-      domain:        (( vault meta.cf.exodus_path ":system_domain" ))
-      org:           (( vault meta.cf.exodus_path ":system_org" ))
-      space:         (( vault meta.cf.exodus_path ":system_space" ))
-      api:           (( concat "https://api." meta.cf.system.domain ))
+      domain: (( vault meta.cf.exodus_path ":system_domain" ))
+      org: (( vault meta.cf.exodus_path ":system_org" ))
+      space: (( vault meta.cf.exodus_path ":system_space" ))
+      api: (( concat "https://api." meta.cf.system.domain ))
 
     nats:
-      client_cert:   (( vault meta.cf.exodus_path ":nats_client_cert" ))
-      client_key:    (( vault meta.cf.exodus_path ":nats_client_key" ))
+      client_cert: (( vault meta.cf.exodus_path ":nats_client_cert" ))
+      client_key: (( vault meta.cf.exodus_path ":nats_client_key" ))
 
     uaa:
-      client_id:     (( vault meta.cf.exodus_path ":app_scheduler_client" ))
+      client_id: (( vault meta.cf.exodus_path ":app_scheduler_client" ))
       client_secret: (( vault meta.cf.exodus_path ":app_scheduler_secret" ))
-      endpoint:      (( concat "https://uaa."  meta.cf.system.domain ))
+      endpoint: (( concat "https://uaa."  meta.cf.system.domain ))
 
   scheduler:
-    domain:    (( concat "scheduler." meta.cf.system.domain ))
+    domain: (( concat "scheduler." meta.cf.system.domain ))
 
     networks:
-    - name:  (( grab params.network || "default" ))
+      - name: (( grab params.network || "default" ))
 
     azs:
-    - (( grab params.availability_zones || "z1"))
+      - (( grab params.availability_zones || "z1"))
 
     vm_type: (( grab params.vm_type || "default" ))
 
     smoke-tests:
       vm_type: (( grab params.vm_type || "errand" ))
 
+    worker_count: (( grab params.worker_count || 10 ))
+
+    log_level: (( grab params.log_level || info ))
+
   db:
-    scheme:   "postgres"
+    scheme: "postgres"
     username: "scheduler"
     password: "scheduler"
     hostname: "127.0.0.1"
-    port:     "5432"
-    sslmode:  "disable"
+    port: "5432"
+    sslmode: "disable"
     database: "scheduler"
 
 params: # NOTE: Contract with kit & genesis is that params are flat for kits.
-  pg_scheme:   (( grab meta.db.scheme ))
+  pg_scheme: (( grab meta.db.scheme ))
   pg_username: (( grab meta.db.username ))
   pg_password: (( grab meta.db.password ))
   pg_hostname: (( grab meta.db.hostname ))
-  pg_port:     (( grab meta.db.port ))
-  pg_sslmode:  (( grab meta.db.sslmode ))
+  pg_port: (( grab meta.db.port ))
+  pg_sslmode: (( grab meta.db.sslmode ))
   pg_database: (( grab meta.db.database ))
   pg_uri: (( concat "postgres://" params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
 
 instance_groups:
-- name:      scheduler
-  instances: 1
-  azs:      (( grab meta.scheduler.azs ))
-  stemcell: (( grab meta.scheduler.stemcell.name || "default" ))
-  networks: (( grab meta.scheduler.networks ))
-  vm_type:  (( grab meta.scheduler.vm_type ))
-
-  jobs:
   - name: scheduler
-    release: ocf-scheduler
-    consumes:
-      postgres:
-        from: scheduler-postgres
+    instances: 1
+    azs: (( grab meta.scheduler.azs ))
+    stemcell: (( grab meta.scheduler.stemcell.name || "default" ))
+    networks: (( grab meta.scheduler.networks ))
+    vm_type: (( grab meta.scheduler.vm_type ))
 
-    properties:
-      scheduler:
-        uaa:
-          client_id:     (( grab meta.cf.uaa.client_id ))
-          client_secret: (( grab meta.cf.uaa.client_secret ))
-          endpoint:      (( grab meta.cf.uaa.endpoint ))
-        cf:
-          api: (( grab meta.cf.system.api ))
-        postgres:
-          uri: (( grab params.pg_uri ))
+    jobs:
+      - name: scheduler
+        release: ocf-scheduler
+        consumes:
+          postgres:
+            from: scheduler-postgres
 
-  - name: postgres
-    properties:
-      databases:
-        roles:
-        - name:     (( grab params.pg_username ))
-          password: (( grab params.pg_password ))
-        databases:
-        - name: (( grab params.pg_database ))
-        port:   (( grab params.pg_port ))
-    provides:
-      postgres:
-        as: scheduler-postgres
-    release: postgres
+        properties:
+          scheduler:
+            worker_count: (( grab meta.scheduler.worker_count ))
+            log_level: (( grab meta.scheduler.log_level ))
+            uaa:
+              client_id: (( grab meta.cf.uaa.client_id ))
+              client_secret: (( grab meta.cf.uaa.client_secret ))
+              endpoint: (( grab meta.cf.uaa.endpoint ))
+            cf:
+              api: (( grab meta.cf.system.api ))
+            postgres:
+              uri: (( grab params.pg_uri ))
 
-- name: smoke-tests
-  instances: 1
-  azs:       (( grab meta.scheduler.azs ))
-  stemcell:  default
-  networks:  (( grab meta.scheduler.networks ))
-  vm_type:   (( grab meta.scheduler.smoke-tests.vm_type ))
-  lifecycle: errand
+      - name: postgres
+        properties:
+          databases:
+            roles:
+              - name: (( grab params.pg_username ))
+                password: (( grab params.pg_password ))
+            databases:
+              - name: (( grab params.pg_database ))
+            port: (( grab params.pg_port ))
+        provides:
+          postgres:
+            as: scheduler-postgres
+        release: postgres
 
-  jobs:
   - name: smoke-tests
-    release: ocf-scheduler
-    properties:
-      cf:
-        username:     (( grab meta.cf.admin.username ))
-        password:     (( grab meta.cf.admin.password ))
-        api:          (( grab meta.cf.system.api ))
-        organization: (( grab meta.cf.system.org ))
-        space:        (( grab meta.cf.system.space ))
+    instances: 1
+    azs: (( grab meta.scheduler.azs ))
+    stemcell: default
+    networks: (( grab meta.scheduler.networks ))
+    vm_type: (( grab meta.scheduler.smoke-tests.vm_type ))
+    lifecycle: errand
+
+    jobs:
+      - name: smoke-tests
+        release: ocf-scheduler
+        properties:
+          cf:
+            username: (( grab meta.cf.admin.username ))
+            password: (( grab meta.cf.admin.password ))
+            api: (( grab meta.cf.system.api ))
+            organization: (( grab meta.cf.system.org ))
+            space: (( grab meta.cf.system.space ))
 
 name: scheduler
 
 update:
-  canaries:          1
-  max_errors:        1
-  max_in_flight:     1
-  serial:            false
+  canaries: 1
+  max_errors: 1
+  max_in_flight: 1
+  serial: false
   canary_watch_time: 5000-600000
   update_watch_time: 5000-600000
 
 stemcells:
-- alias:  default
-  os:      (( grab params.stemcell_os      || "ubuntu-jammy" ))
-  version: (( grab params.stemcell_version || "latest" ))
+  - alias: default
+    os: (( grab params.stemcell_os      || "ubuntu-jammy" ))
+    version: (( grab params.stemcell_version || "latest" ))

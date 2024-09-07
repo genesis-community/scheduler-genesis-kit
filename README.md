@@ -1,7 +1,7 @@
 scheduler Genesis Kit
 =================
 
-This assumes a genesis deployed CF environment with the same environment name 
+This assumes a genesis deployed CF environment with the same environment name
 has already been deployed.
 
 Quick Start
@@ -27,7 +27,7 @@ Features
 ## `external-postgres` and `external-postgres-vault`
 
 By default an internal (colocoated job) postgres is deployed for use. Optionally
-you may configure to use an external PostgreSQL database by adding the 
+you may configure to use an external PostgreSQL database by adding the
 `external-postgres-vault` feature together with the following in vault (no defaults).
 
 ```
@@ -40,10 +40,10 @@ secret/$env/vault/db:sslmode
 secret/$env/vault/db:database
 ```
 
-Note that when you do a `new` environment you will be prompted for these and 
+Note that when you do a `new` environment you will be prompted for these and
 they will get stored in vault directly so you do not need to set them separately.
 
-If you are using another system to generate them and stick into vault 
+If you are using another system to generate them and stick into vault
 (ex: terraform) then it will be directly consumed.
 
 You can do this using `safe` in a single command like so:
@@ -58,7 +58,7 @@ safe set secret/dev/ocf-scheduler/db \
   database="scheduler"
 ```
 
-for the `external-postgres` feature (no `-vault`) you can override defaults 
+for the `external-postgres` feature (no `-vault`) you can override defaults
 using the environment file's params object:
 
 ```yaml
@@ -75,8 +75,25 @@ params:
 ## `cf-route-registrar`
 
 By enabling the `cf-route-registrar` feature the kit will extrac the CF deployment
-information required to register the scheduler API with CF at 
+information required to register the scheduler API with CF at
 `scheduler.<cf_system_domain>`
+
+
+## Number of Workers
+
+The number of works defaults to 10 and can be set using the `worker_count` param, for example:
+```yaml
+params:
+  worker_count: 40
+```
+
+## Log Level
+
+The log level defaults to `info` and can be set using the `log_level` param, for example:
+```yaml
+params:
+  log_level: debug
+```
 
 Params
 ------
@@ -88,10 +105,9 @@ Params per-feature are defined above.
 Cloud Config
 ------------
 
-The scheduler service is golang based and as such does not require a huge amount 
+The scheduler service is golang based and as such does not require a huge amount
 of resources. That said be sure to allocate enough dedicated CPU vs time-shared.
-Two cores should be sufficient. 
+Two cores should be sufficient.
 
-If using the internal postgres feature (default) then more resources should be 
+If using the internal postgres feature (default) then more resources should be
 allocated for the running of the PostgreSQL server.
-
