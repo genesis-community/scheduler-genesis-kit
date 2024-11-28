@@ -7,7 +7,7 @@ meta:
     hostname: (( vault meta.vault "/db/scheduler:hostname" ))
     port:     (( vault meta.vault "/db/scheduler:port" ))
     database: (( vault meta.vault "/db/scheduler:database" ))
-    sslmode:  "verify-ca"
+    sslmode:  (( vault meta.vault "/db/scheduler:sslmode" ))
 
 params:
   pg_scheme:   (( grab meta.db.scheme   ))
@@ -22,6 +22,7 @@ instance_groups:
 - name: scheduler
   jobs:
   - (( delete "postgres" ))
+  persistent_disk_type: (( prune ))
 
 ---
 - type: remove

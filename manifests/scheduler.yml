@@ -1,39 +1,39 @@
 ---
 meta:
   cf:
-    exodus_path: (( concat $GENESIS_EXODUS_MOUNT genesis.env "/cf" ))
-    deployment_name: (( concat genesis.env "-cf" ))
-    core_network: (( vault meta.cf.exodus_path ":core_network" ))
+    exodus:          (( concat $GENESIS_EXODUS_MOUNT params.cf_deployment_env "/" params.cf_deployment_type ))
+    deployment_name: (( concat params.cf_deployment_env "-" params.cf_deployment_type ))
+    core_network:    (( vault meta.cf.exodus ":core_network" ))
 
     admin:
-      username: (( vault meta.cf.exodus_path ":admin_username" ))
-      password: (( vault meta.cf.exodus_path ":admin_password" ))
+      username: (( vault meta.cf.exodus ":admin_username" ))
+      password: (( vault meta.cf.exodus ":admin_password" ))
 
     system:
-      domain: (( vault meta.cf.exodus_path ":system_domain" ))
-      org: (( vault meta.cf.exodus_path ":system_org" ))
-      space: (( vault meta.cf.exodus_path ":system_space" ))
+      domain: (( vault meta.cf.exodus ":system_domain" ))
+      org: (( vault meta.cf.exodus ":system_org" ))
+      space: (( vault meta.cf.exodus ":system_space" ))
       api: (( concat "https://api." meta.cf.system.domain ))
 
     nats:
-      client_cert: (( vault meta.cf.exodus_path ":nats_client_cert" ))
-      client_key: (( vault meta.cf.exodus_path ":nats_client_key" ))
+      client_cert: (( vault meta.cf.exodus ":nats_client_cert" ))
+      client_key: (( vault meta.cf.exodus ":nats_client_key" ))
 
     uaa:
-      client_id: (( vault meta.cf.exodus_path ":app_scheduler_client" ))
-      client_secret: (( vault meta.cf.exodus_path ":app_scheduler_secret" ))
+      client_id: (( vault meta.cf.exodus ":app_scheduler_client" ))
+      client_secret: (( vault meta.cf.exodus ":app_scheduler_secret" ))
       endpoint: (( concat "https://uaa."  meta.cf.system.domain ))
 
   scheduler:
     domain: (( concat "scheduler." meta.cf.system.domain ))
 
-    networks:
-      - name: (( grab params.network || "default" ))
-
     azs:
       - (( grab params.availability_zones || "z1"))
 
-    vm_type: (( grab params.vm_type || "default" ))
+    vm_type:   (( grab params.vm_type || "default" ))
+    disk_type: (( grab params.disk_type || "default" ))
+    networks:
+      - name: (( grab params.network || "default" ))
 
     smoke-tests:
       vm_type: (( grab params.vm_type || "errand" ))
@@ -43,23 +43,30 @@ meta:
     log_level: (( grab params.log_level || "info" ))
 
   db:
-    scheme: "postgres"
+    scheme:   "postgres://"
     username: "scheduler"
     password: "scheduler"
     hostname: "127.0.0.1"
-    port: "5432"
-    sslmode: "disable"
+    port:     "5432"
+    sslmode:  "disable"
     database: "scheduler"
 
 params: # NOTE: Contract with kit & genesis is that params are flat for kits.
-  pg_scheme: (( grab meta.db.scheme ))
+  pg_scheme:   (( grab meta.db.scheme ))
   pg_username: (( grab meta.db.username ))
   pg_password: (( grab meta.db.password ))
   pg_hostname: (( grab meta.db.hostname ))
-  pg_port: (( grab meta.db.port ))
-  pg_sslmode: (( grab meta.db.sslmode ))
+  pg_port:     (( grab meta.db.port ))
+  pg_sslmode:  (( grab meta.db.sslmode ))
   pg_database: (( grab meta.db.database ))
-  pg_uri: (( concat "postgres://" params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
+  pg_uri:      (( concat params.pg_scheme params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
+
+  cf_deployment_env:  (( grab genesis.env || params.env)) # assumes same name as cf env
+  cf_deployment_type: cf # for crazy people using an "non-cf" cf deployment named something else
+
+exodus:
+  cf_deployment_env:  (( grab params.cf_deployment_env ))
+  cf_deployment_type: (( grab params.cf_deployment_type ))
 
 instance_groups:
   - name: scheduler
@@ -68,6 +75,7 @@ instance_groups:
     stemcell: (( grab meta.scheduler.stemcell.name || "default" ))
     networks: (( grab meta.scheduler.networks ))
     vm_type: (( grab meta.scheduler.vm_type ))
+    persistent_disk_type: (( grab meta.scheduler.disk_type ))
 
     jobs:
       - name: scheduler
@@ -121,8 +129,6 @@ instance_groups:
             api: (( grab meta.cf.system.api ))
             organization: (( grab meta.cf.system.org ))
             space: (( grab meta.cf.system.space ))
-
-name: scheduler
 
 update:
   canaries: 1

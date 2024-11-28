@@ -53,7 +53,7 @@ safe set secret/dev/ocf-scheduler/db \
   port="5432" \
   username="scheduler" \
   password="U4k294KkhuNEe9ZaGoe15tGywr5o" \
-  scheme="postgres" \
+  scheme="postgres://" \
   sslmode="disable" \
   database="scheduler"
 ```

@@ -3,14 +3,15 @@ set -u
 #Version check
 min_version="2.7.8-rc1"
 genesis_version="$(genesis -v 2>&1 | grep '^Genesis v' | sed -e 's/Genesis v\(.*\) (.*$/\1/')"
-if ! [[ "$genesis_version" =~ -dev$ ]] && ! new_enough "$genesis_version" "$min_version" ; then
+if ! [[ "$genesis_version" =~ -dev$ ]] && ! new_enough "$genesis_version" "$min_version"; then
   describe >&2 "" "#R{[ERROR]} This kit needs Genesis $min_version.  Please upgrade before continuing" ""
   exit 1
 fi
 set -e
 
 list() {
-  describe "" "$(cat <<EOF
+  describe "" "$(
+    cat <<EOF
 The following addons are defined:
 
   #G{bind-scheduler}   Binds the Scheduler service broker to your deployed CF.
@@ -19,7 +20,7 @@ The following addons are defined:
                     to bypass confirmation prompt.
 
 EOF
-)" ""
+  )" ""
 }
 
 cf_login() {
@@ -28,8 +29,8 @@ cf_login() {
   cf_exodus_path="${GENESIS_EXODUS_MOUNT}${cf_deployment_env}/${cf_deployment_type}"
   if ! cf plugins | grep -q '^cf-targets'; then
     describe "#Y{The cf-targets plugin does not seem to be installed}"
-        echo "Install it first, via 'genesis do $GENESIS_ENVIRONMENT -- setup-cli'"
-        echo "from your $cf_deployment_env environment in your CF deployment repo."
+    echo "Install it first, via 'genesis do $GENESIS_ENVIRONMENT -- setup-cli'"
+    echo "from your $cf_deployment_env environment in your CF deployment repo."
     exit 1
   fi
 
@@ -42,7 +43,8 @@ cf_login() {
   cf api "$api_url" --skip-ssl-validation
   cf auth "$username" "$password"
   cf save-target -f "$cf_deployment_env"
-  echo ; echo
+  echo
+  echo
   cf target
 }
 
@@ -51,12 +53,12 @@ add_plugin() {
   describe "" "" "#Wkiu{Attempting to install latest version of the starkandwayne/ocf-scheduler-cf-plugin...}"
   existing="$(cf plugins --checksum | grep OCFScheduler | tr -s ' ' | cut -d ' ' -f 2)"
   cf install-plugin -r starkandwayne ocf-scheduler-cf-plugin "$@"
-  updated="$( cf plugins --checksum | grep OCFScheduler | tr -s ' ' | cut -d ' ' -f 2)"
-  if [[ -z "$updated" ]] ; then
+  updated="$(cf plugins --checksum | grep OCFScheduler | tr -s ' ' | cut -d ' ' -f 2)"
+  if [[ -z "$updated" ]]; then
     echo
     exit 0
   fi
-  if [[ "$existing" == "$updated" ]] ; then
+  if [[ "$existing" == "$updated" ]]; then
     describe "No update - existing ocf-scheduler-cf-plugin remains at version $existing" ""
     exit 0
   fi
@@ -68,17 +70,17 @@ add_plugin() {
   cf plugins | grep OCFScheduler
   describe "" \
     "#G{[OK]} Successfully $action starkandwayne ocf-scheduler-cf-plugin." \
-        "     You can run #c{cf uninstall-plugin OCFScheduler} to remove it."
+    "     You can run #c{cf uninstall-plugin OCFScheduler} to remove it."
   exit 0
 }
 
 bind_scheduler() {
   cf_login
-  username="$(exodus service_broker_username)"
-  password="$(exodus service_broker_password)"
+  broker_username="$(exodus service_broker_username)"
+  broker_password="$(exodus service_broker_password)"
   domain=$(exodus service_broker_domain)
   url="https://$domain"
-  cf create-service-broker scheduler "$username" "$password" "$url"
+  cf create-service-broker scheduler "$broker_username" "$broker_password" "$url"
   cf enable-service-access scheduler
   describe "" "#G{[OK]} Successfully created the service broker."
   exit 0
@@ -89,15 +91,15 @@ smoke::tests() {
 }
 
 case $GENESIS_ADDON_SCRIPT in
-  (list)                list ;;
-  (smoke-tests)         smoke::tests ;;
-  (setup-cf-plugin)     add_plugin "$@" ;;
-  (bind|bind-scheduler) bind_scheduler ;;
-  (*)
-    describe >&2 "" "#R{[ERROR]} No such addon: $GENESIS_ADDON_SCRIPT"
-    list
-    exit 1
-    ;;
+list) list ;;
+smoketest | smoke-tests) smoke::tests ;;
+setup-cf-plugin) add_plugin "$@" ;;
+bind | bind-scheduler) bind_scheduler ;;
+*)
+  describe >&2 "" "#R{[ERROR]} No such addon: $GENESIS_ADDON_SCRIPT"
+  list
+  exit 1
+  ;;
 esac
 
 exit 0
