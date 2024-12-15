@@ -1,4 +1,4 @@
-package Genesis::Hook::CloudConfig::CF v2.6.0;
+package Genesis::Hook::CloudConfig::Scheduler v2.6.0;
 
 use strict;
 use warnings;
