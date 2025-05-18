@@ -13,6 +13,7 @@ use parent qw(Genesis::Hook);
 
 use Genesis qw/info bail run/;
 use Time::HiRes qw/gettimeofday/;
+use JSON::PP;
 
 sub init {
   my ($class, %ops) = @_;
