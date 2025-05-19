@@ -40,6 +40,10 @@ sub perform {
                 'net_id' => $self->network_reference('id'),
                 'security_groups' => ['default']
               },
+              stackit => {
+                'net_id' => $self->network_reference('id'),
+                'security_groups' => ['default']
+              },
             },
           },
         )
@@ -56,9 +60,29 @@ sub perform {
                 'size' => 30
               },
             },
+            stackit => {
+              'instance_type' => $self->for_scale({
+                  dev => 'g1.2',
+                  prod => 'g1.3'
+                }, 'g1.2'),
+              'boot_from_volume' => $self->TRUE,
+              'root_disk' => {
+                'size' => 30
+              },
+            },
           }),
         $self->vm_type_definition('smoke-test', cloud_properties_for_iaas => {
             openstack => {
+              'instance_type' => $self->for_scale({
+                  dev => 'g1.2',
+                  prod => 'g1.3'
+                }, 'g1.2'),
+              'boot_from_volume' => $self->TRUE,
+              'root_disk' => {
+                'size' => 30
+              },
+            },
+            stackit => {
               'instance_type' => $self->for_scale({
                   dev => 'g1.2',
                   prod => 'g1.3'
@@ -82,6 +106,9 @@ sub perform {
             openstack => {
               'type' => 'storage_premium_perf6',
             },
+            stackit => {
+              'type' => 'storage_premium_perf6',
+            },
           },
         ),
         $self->disk_type_definition('database',
@@ -93,6 +120,9 @@ sub perform {
           },
           cloud_properties_for_iaas => {
             openstack => {
+              'type' => 'storage_premium_perf6',
+            },
+            stackit => {
               'type' => 'storage_premium_perf6',
             },
           },
