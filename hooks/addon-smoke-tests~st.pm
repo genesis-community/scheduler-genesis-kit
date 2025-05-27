@@ -39,7 +39,7 @@ sub perform {
   }
 
   info("\n#G{[OK]} Smoke tests completed successfully.\n");
-  return $self->done(1);
+	return $self->done();
 }
 
 1;

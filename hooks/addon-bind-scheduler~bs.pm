@@ -62,7 +62,7 @@ sub perform {
 
   info("\n#G{[OK]} Successfully created and configured the scheduler service broker.");
 
-  return $self->done(1);
+	return $self->done();
 }
 
 sub cf_login {

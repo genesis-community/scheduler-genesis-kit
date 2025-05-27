@@ -42,7 +42,7 @@ sub perform {
   close $fh;
 
   # Mark the hook as done successfully
-  return $self->done(1);
+	return $self->done();
 }
 
 1;

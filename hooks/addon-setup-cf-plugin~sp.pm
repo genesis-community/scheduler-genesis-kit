@@ -98,7 +98,7 @@ sub perform {
     "\n\tYou can run #c{cf uninstall-plugin OCFScheduler} to remove it.\n"
   );
 
-  return $self->done(1);
+	return $self->done();
 }
 
 1;
