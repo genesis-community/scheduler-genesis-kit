@@ -1,4 +1,3 @@
-# vim: set ts=2 sw=2 sts=2 noet fdm=marker foldlevel=1:
 package Genesis::Hook::CloudConfig::Scheduler;
 
 use v5.20;
@@ -31,7 +30,7 @@ sub perform {
           dynamic_subnets => {
             allocation => {
               size => 1,
-              statics => 3,
+              statics => 0,
             },
             cloud_properties_for_iaas => {
               openstack => {

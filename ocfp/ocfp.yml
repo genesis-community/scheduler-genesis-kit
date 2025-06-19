@@ -28,8 +28,3 @@ meta:
     smoke-tests:
       vm_type: (( concat genesis.env "." genesis.type ".vm-smoke-test" ))
 
-    stemcell:
-      name:    (( grab params.stemcell_name    || "default" ))
-      os:      (( grab params.stemcell_os      || "ubuntu-bionic" ))
-      version: (( grab params.stemcell_version || "latest" ))
-
