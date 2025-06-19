@@ -1,4 +1,3 @@
-# vim: set ts=2 sw=2 sts=2 noet fdm=marker foldlevel=1:
 package Genesis::Hook::PostDeploy::Scheduler;
 
 use v5.20;
@@ -44,7 +43,8 @@ sub perform {
   # Call parent class methods
   $self->SUPER::perform() if $self->can('SUPER::perform');
 
-	return $self->done();
+	return $self->done(1);
 }
 
 1;
+# vim: set ts=2 sw=2 sts=2 noet fdm=marker foldlevel=1:
