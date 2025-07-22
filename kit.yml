@@ -1,5 +1,5 @@
-name:    scheduler
-version: 0.0.17
+name:    ocf-scheduler
+version: 0.0.18
 author:  Wayne E. Seguin <wayneeseguin@starkandwayne.com>
 docs:    https://github.com/cloudfoundry-community/scheduler-boshrelease
 code:    https://github.com/genesis-community/scheduler-genesis-kit

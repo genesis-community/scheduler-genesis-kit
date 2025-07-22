@@ -1,12 +1,22 @@
 ---
+meta:
+  db:
+    scheme:   (( vault meta.vault "/db/scheduler:scheme" ))
+    username: (( vault meta.vault "/db/scheduler:username" ))
+    password: (( vault meta.vault "/db/scheduler:password" ))
+    hostname: (( vault meta.vault "/db/scheduler:hostname" ))
+    port:     (( vault meta.vault "/db/scheduler:port" ))
+    database: (( vault meta.vault "/db/scheduler:database" ))
+    sslmode:  (( vault meta.vault "/db/scheduler:sslmode" ))
+
 params:
-  pg_scheme:   (( grab params.db.scheme   || meta.db.scheme   )) 
-  pg_username: (( grab params.db.username || meta.db.username )) 
-  pg_password: (( grab params.db.password || meta.db.password )) 
-  pg_hostname: (( grab params.db.hostname || meta.db.hostname )) 
-  pg_port:     (( grab params.db.port     || meta.db.port     )) 
-  pg_database: (( grab params.db.database || meta.db.database )) 
-  pg_sslmode:  (( grab params.db.sslmode  || meta.db.sslmode  )) 
+  pg_scheme:   (( grab meta.db.scheme   ))
+  pg_username: (( grab meta.db.username ))
+  pg_password: (( grab meta.db.password ))
+  pg_hostname: (( grab meta.db.hostname ))
+  pg_port:     (( grab meta.db.port     ))
+  pg_sslmode:  (( grab meta.db.sslmode  ))
+  pg_database: (( grab meta.db.database ))
 
 instance_groups:
 - name: scheduler
