@@ -16,18 +16,23 @@ sub init {
   my ($class, %ops) = @_;
   my $obj = $class->SUPER::init(%ops);
   $obj->{ok} = 1; # Start assuming all checks will pass
-  $obj->check_minimum_genesis_version('3.1.0-rc.20');
+  $obj->check_minimum_genesis_version('3.1.0');
   return $obj;
 }
 
 sub perform {
   my ($self) = @_;
   my $env = $self->env;
+	my $cf_deployment_env = $self->env->name;
+	my $cf_deployment_type = "cf";
 
   # Check if CF integration is configured properly when using cf-route-registrar
   if ($env->has_feature('cf-route-registrar')) {
     # Check for CF exodus data
-    my $cf_deployment_env = $env->lookup('params.cf_deployment_env', undef);
+		if (! $env->has_feature('ocfp')) {
+			$cf_deployment_env = $env->lookup('params.cf_deployment_env', $cf_deployment_env);
+			$cf_deployment_type = $env->lookup('params.cf_deployment_type', $cf_deployment_type);
+		}
 
     if (!$cf_deployment_env) {
       $env->notify(
@@ -35,7 +40,7 @@ sub perform {
       );
       $self->{ok} = 0;
     } else {
-      my $exodus_path = $env->exodus_mount()."$cf_deployment_env/cf";
+      my $exodus_path = $env->exodus_mount()."$cf_deployment_env/$cf_deployment_type";
       if (!$env->vault->has($exodus_path)) {
         $env->notify(
           error => "CF exodus data not found at $exodus_path [#R{FAILED}]"
@@ -49,8 +54,7 @@ sub perform {
 
   # Check for external postgres configuration
   if ($env->has_feature('external-postgres') || $env->has_feature('external-postgres-vault')) {
-    my $postgres_host = $env->lookup('params.external_db.host', undef);
-
+    my $postgres_host = $env->lookup('params.db.hostname', undef);
     if (!$postgres_host) {
       $env->notify(
         error => "External postgres feature requires params.external_db.host to be set [#R{FAILED}]"

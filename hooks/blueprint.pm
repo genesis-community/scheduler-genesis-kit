@@ -13,7 +13,7 @@ sub init {
   my $class = shift;
   my $obj = $class->SUPER::init(@_);
   $obj->{files} = [];
-  $obj->check_minimum_genesis_version('3.1.0-rc.20');
+  $obj->check_minimum_genesis_version('3.1.0');
   return $obj;
 }
 
@@ -28,9 +28,7 @@ sub perform {
   # Handle database selection
   if ($self->want_feature("external-postgres")) {
     $self->add_files("manifests/external-postgres.yml");
-  } elsif ($self->want_feature("external-postgres-vault")) {
-    $self->add_files("manifests/external-postgres-vault.yml");
-  } else {
+  } else { # Defaults to internal-postgres
     $self->add_files("manifests/releases/postgres.yml");
   }
 

@@ -14,7 +14,7 @@ use Time::HiRes qw/gettimeofday/;
 sub init {
   my ($class, %ops) = @_;
   my $obj = $class->SUPER::init(%ops);
-  $obj->check_minimum_genesis_version('3.1.0-rc.20');
+  $obj->check_minimum_genesis_version('3.1.0');
   return $obj;
 }
 
@@ -24,7 +24,7 @@ sub perform {
 
   # Only proceed if deployment was successful
   if ($self->deploy_successful) {
-    $env->notify(
+    info(
       "\n#M{$ENV{GENESIS_ENVIRONMENT}} Scheduler deployed!\n".
       "\nTo use this Scheduler, you need to:\n".
       "\n1. Set up the Scheduler CF plugin:\n".

@@ -61,7 +61,7 @@ params: # NOTE: Contract with kit & genesis is that params are flat for kits.
   pg_database: (( grab meta.db.database ))
   pg_uri:      (( concat params.pg_scheme params.pg_username ":" params.pg_password "@" params.pg_hostname ":" params.pg_port "/" params.pg_database "?sslmode=" params.pg_sslmode ))
 
-  cf_deployment_env:  (( grab genesis.env || params.env)) # assumes same name as cf env
+  cf_deployment_env:  (( grab genesis.env || params.env )) # assumes same name as cf env
   cf_deployment_type: cf # for crazy people using an "non-cf" cf deployment named something else
 
 exodus:
