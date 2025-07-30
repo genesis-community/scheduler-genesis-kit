@@ -43,7 +43,7 @@ sub perform {
       my $exodus_path = $env->exodus_mount()."$cf_deployment_env/$cf_deployment_type";
       if (!$env->vault->has($exodus_path)) {
         $env->notify(
-          error => "CF exodus data not found at $exodus_path [#R{FAILED}]"
+          error => "CF exodus data not found at $exodus_path (Is CF deployed?) [#R{FAILED}]"
         );
         $self->{ok} = 0;
       } else {
