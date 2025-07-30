@@ -43,6 +43,9 @@ sub perform {
   # Add OCFP configuration if needed
   if ($self->want_feature("ocfp")) {
     $self->add_files("ocfp/ocfp.yml");
+		if ($self->iaas eq 'aws') { # TODO: Perhaps this should be `trusted-certs` feature?
+			$self->add_files('manifests/trusted-certs.yml')
+		}
   }
 
   # Add any custom ops files
