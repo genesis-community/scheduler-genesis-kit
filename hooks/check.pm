@@ -53,7 +53,7 @@ sub perform {
   }
 
   # Check for external postgres configuration
-  if ($env->has_feature('external-postgres') || $env->has_feature('external-postgres-vault')) {
+  if ($env->has_feature('external-postgres') && ! $env->has_feature('external-postgres-vault')) {
     my $postgres_host = $env->lookup('params.db.hostname', undef);
     if (!$postgres_host) {
       $env->notify(
