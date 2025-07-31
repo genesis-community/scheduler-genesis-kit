@@ -24,17 +24,9 @@ sub cmd_details {
 sub perform {
   my ($self) = @_;
   my $env = $self->env;
+  info("\nRunning smoke tests errand for the Scheduler deployment...\n");
 
-  info("\nRunning smoke tests for the Scheduler deployment...\n");
-
-  # Run the smoke-tests errand using BOSH
-  my $cmd = sprintf("%s bosh run-errand smoke-tests", $env->get_call_path_with_env);
-  my ($out, $rc, $err) = run({interactive => 1}, $cmd);
-
-  if ($rc != 0) {
-    info("\n#R{[ERROR]} Smoke tests failed. Please check the output above for details.\n");
-    return $self->done(0);
-  }
+	$env->bosh->run_errand("smoke-tests");
 
   info("\n#G{[OK]} Smoke tests completed successfully.\n");
 	return $self->done();
