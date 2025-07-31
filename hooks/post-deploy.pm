@@ -40,9 +40,6 @@ sub perform {
     );
   }
 
-  # Call parent class methods
-  $self->SUPER::perform() if $self->can('SUPER::perform');
-
 	return $self->done(1);
 }
 
