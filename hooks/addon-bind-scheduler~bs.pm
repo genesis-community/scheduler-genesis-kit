@@ -48,7 +48,7 @@ sub perform {
 		if ($err && $err =~ /service broker name is taken/) {
 			info("\nService broker already exists, updating it instead...");
 			run(
-				{onfailure => "Failed to update service broker"},
+				{onfailure => "Failed to update service broker", interactive => 1},
 				'cf update-service-broker scheduler "$1" "$2" "$3"',
 				$broker_username, $broker_password, $url
 			);
@@ -70,21 +70,13 @@ sub perform {
 sub cf_login {
 	my ($self) = @_;
 	my $env = $self->env;
-	my $cf_deployment_env = $env->name;
-	my $cf_deployment_type = "cf";
-
-	# Determine exodus target
-	my $cf_target = sprintf(
-		"%s/%s",
-		$env->lookup('params.cf_deployment_env', $env->name),
-		$env->lookup('params.cf_deployment_type', 'cf')
-	);
+	my $cf_deployment_env = $env->lookup('params.cf_deployment_env', $env->name);
+	my $cf_deployment_type = $env->lookup('params.cf_deployment_type', 'cf');
+	my $cf_target = sprintf( "%s/%s", $cf_deployment_env, $cf_deployment_type);
 	# Get exodus from target - default to empty hash if not found
 	my $cf_exodus = $env->exodus_lookup('.',{},$cf_target);
-
 	my ($out, $rc) = run('cf plugins | grep -q \'^cf-targets\'');
 	my $use_cf_targets = ($rc == 0);
-
 	if (!$use_cf_targets) {
 		info(
 			"\n#Y{The cf-targets plugin does not seem to be installed}".
@@ -94,36 +86,35 @@ sub cf_login {
 		bail("CF targets plugin is required");
 	}
 
-	my $system_domain = $cf_exodus->{system_domain};
-	my $username = $cf_exodus->{admin_username};
-	my $password = $cf_exodus->{admin_password};
-	my $api_url = "https://".$cf_exodus->{api_domain};
-
-	bail("Could not find system_domain in CF exodus data") unless $system_domain;
-	bail("Could not find admin_username in CF exodus data") unless $username;
-	bail("Could not find admin_password in CF exodus data") unless $password;
+	my $system_domain = $cf_exodus->{system_domain}
+		or bail("Could not find system_domain in CF exodus data");;
+	my $username = $cf_exodus->{admin_username}
+		or bail("Could not find admin_username in CF exodus data");
+	my $password = $cf_exodus->{admin_password}
+		or bail("Could not find admin_password in CF exodus data");
+	my $api_url = "https://" . $cf_exodus->{api_domain};
 
 	info("\n");
 	run(
-		{onfailure => "Failed to set CF API endpoint"},
+		{onfailure => "Failed to set CF API endpoint", interactive => 1},
 		'cf api "$1" --skip-ssl-validation',
 		$api_url
 	);
 	info("\n");
 	run(
-		{onfailure => "Failed to authenticate with CF"},
+		{onfailure => "Failed to authenticate with CF", interactive => 1},
 		'cf auth "$1" "$2"',
 		$username, $password
 	);
 	info("\n");
 	run(
-		{onfailure => "Failed to save CF target"},
+		{onfailure => "Failed to save CF target", interactive => 1},
 		'cf save-target -f "$1"',
 		$cf_deployment_env
 	);
 	info("\n");
 	run(
-		{onfailure => "Failed to set CF target"},
+		{onfailure => "Failed to set CF target", interactive => 1},
 		'cf target'
 	);
 	info("\n");
