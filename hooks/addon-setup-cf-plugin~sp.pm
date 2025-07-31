@@ -18,7 +18,8 @@ sub init {
 
 sub cmd_details {
   return
-  "Adds the 'scheduler' plugin to the Cloud Foundry CLI.\n".
+  "Downloads and installs the 'scheduler' plugin for the Cloud Foundry CLI\n".
+  "from the official GitHub releases.\n".
   "Supports the following options:\n".
   "[[  #y{-f}                 >>Force installation of the plugin, overwriting existing version";
 }
@@ -34,16 +35,32 @@ sub perform {
 
   my $force = $options{f} ? 1 : 0;
 
-  # Check if CF Community repository exists
-  my ($out, $rc) = run('cf list-plugin-repos | grep -q CF-Community');
-  if ($rc != 0) {
-    info('Adding #G{Cloud Foundry Community} plugins repository...');
-    # TODO: Check if run cmd fails and handle it
-    run('cf add-plugin-repo CF-Community http://plugins.cloudfoundry.org');
+  # Determine platform
+  my ($os) = run('uname -s | tr A-Z a-z');
+  chomp($os);
+  $os = 'darwin' if $os eq 'darwin';
+  $os = 'linux' if $os eq 'linux';
+  
+  # Determine architecture
+  my ($arch) = run('uname -m');
+  chomp($arch);
+  $arch = 'amd64' if $arch eq 'x86_64';
+  $arch = 'arm64' if $arch eq 'aarch64';
+  
+  # Get latest release version from GitHub API
+  info("Fetching latest release information from GitHub...");
+  my ($release_json) = run('curl -s https://api.github.com/repos/cloudfoundry-community/ocf-scheduler-cf-plugin/releases/latest');
+  my ($version) = run('echo \'$1\' | jq -r .tag_name', $release_json);
+  chomp($version);
+  
+  if (!$version || $version eq 'null') {
+    bail("Failed to fetch latest release version from GitHub");
   }
+  
+  info("Latest release version: #G{$version}");
 
   # Check if scheduler plugin already exists
-  ($out, $rc) = run('cf plugins | grep -q OCFScheduler');
+  my ($out, $rc) = run('cf plugins | grep -q OCFScheduler');
 
   # Store existing version for comparison
   my $existing = "";
@@ -52,13 +69,32 @@ sub perform {
     chomp($existing);
   }
 
+  # Construct download URL
+  my $binary_name = "ocf-scheduler-cf-plugin-${version}-${os}-${arch}";
+  my $download_url = "https://github.com/cloudfoundry-community/ocf-scheduler-cf-plugin/releases/download/${version}/${binary_name}";
+  
+  info("\n#Wkiu{Attempting to install ocf-scheduler-cf-plugin $version for $os/$arch...}\n");
+  
+  # Download the plugin
+  my $tmp_file = "/tmp/ocf-scheduler-cf-plugin-$$";
+  info("Downloading plugin from #C{$download_url}...");
+  ($out, $rc) = run("curl -sL -o $tmp_file '$download_url'");
+  
+  if ($rc != 0 || ! -f $tmp_file) {
+    bail("Failed to download plugin from $download_url");
+  }
+  
+  # Make it executable
+  run("chmod +x $tmp_file");
+  
   # Install plugin
-  info("\n#Wkiu{Attempting to install latest version of the starkandwayne/ocf-scheduler-cf-plugin...}\n");
-
-  my $cmd = 'cf install-plugin -r starkandwayne ocf-scheduler-cf-plugin';
+  my $cmd = "cf install-plugin $tmp_file";
   $cmd .= ' -f' if $force;
 
-  run($cmd);
+  ($out, $rc) = run($cmd);
+  
+  # Clean up temporary file
+  run("rm -f $tmp_file");
 
   # Check if we successfully installed the plugin
   ($out, $rc) = run('cf plugins | grep -q OCFScheduler');
@@ -92,7 +128,7 @@ sub perform {
 
   info(
     "\n$header\n$separator\n$plugin_line\n".
-    "\n#G{[OK]} Successfully $action starkandwayne ocf-scheduler-cf-plugin.".
+    "\n#G{[OK]} Successfully $action ocf-scheduler-cf-plugin $version.".
     "\n\tYou can run #c{cf uninstall-plugin OCFScheduler} to remove it.\n"
   );
 
