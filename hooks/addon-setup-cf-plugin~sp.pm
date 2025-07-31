@@ -32,11 +32,11 @@ sub perform {
 	# Parse options according to the proper pattern
 	my %options = $self->parse_options(
 		[
-			'f',    # Force installation of plugins
+			'f',    # Force installation of plugins (kept for backward compatibility)
 		]
 	);
 
-	my $force = $options{f} ? 1 : 0;
+	# Note: We always force installation to avoid TTY issues in automated environments
 
 	# Determine platform
 	my ($os) = run('uname -s | tr A-Z a-z');
@@ -101,9 +101,8 @@ sub perform {
 	# Make it executable
 	run("chmod +x $tmp_file");
 
-	# Install plugin
-	my $cmd = "cf install-plugin $tmp_file";
-	$cmd .= ' -f' if $force;
+	# Install plugin - always use -f flag to avoid interactive prompt in non-TTY environment
+	my $cmd = "cf install-plugin -f $tmp_file";
 
 	info("Installing plugin with command: $cmd");
 	( $out, $rc ) = run($cmd);
