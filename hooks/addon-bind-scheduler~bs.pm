@@ -48,11 +48,13 @@ sub perform {
 
 	my $broker_url = "https://$broker_ip";
 
+	info("\nscheduler_client: $scheduler_client\n")
+	info("\nbroker_url: $broker_url\n")
+
 	my ($out, $rc) = run(
 		'cf create-service-broker scheduler "$1" "$2" "$3"',
 		$scheduler_client, $scheduler_secret, $broker_url
 	);
-
 	if ($rc) {
 		# Check if it's just because it already exists
 		if ($out && $out =~ /Name must be unique/) {
