@@ -3,7 +3,7 @@ package Genesis::Hook::Addon::Scheduler::BindScheduler;
 use v5.20;
 use warnings; # Genesis min perl version is 5.20
 
-use Genesis qw/info run bail/;
+use Genesis qw/info run bail read_json_from/;
 # Only needed for development
 BEGIN {push @INC, $ENV{GENESIS_LIB} ? $ENV{GENESIS_LIB} : $ENV{HOME}.'./.genesis/lib'}
 
