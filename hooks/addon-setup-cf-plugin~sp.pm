@@ -94,6 +94,10 @@ sub perform {
 		bail("Downloaded file is missing or empty: $tmp_file");
 	}
 
+	# Check file type
+	my ($file_info) = run("file $tmp_file");
+	info("Downloaded file type: $file_info");
+
 	# Make it executable
 	run("chmod +x $tmp_file");
 
@@ -101,7 +105,17 @@ sub perform {
 	my $cmd = "cf install-plugin $tmp_file";
 	$cmd .= ' -f' if $force;
 
+	info("Installing plugin with command: $cmd");
 	( $out, $rc ) = run($cmd);
+
+	# Check if installation failed
+	if ( $rc != 0 ) {
+		# Clean up temporary file before failing
+		run("rm -f $tmp_file");
+		info("\nPlugin installation failed with exit code $rc");
+		info("Output: $out") if $out;
+		return $self->done(0);
+	}
 
 	# Clean up temporary file
 	run("rm -f $tmp_file");
