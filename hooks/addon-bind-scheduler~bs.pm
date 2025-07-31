@@ -94,30 +94,28 @@ sub cf_login {
 		or bail("Could not find admin_password in CF exodus data");
 	my $api_url = "https://" . $cf_exodus->{api_domain};
 
-	info("\n");
 	run(
 		{onfailure => "Failed to set CF API endpoint", interactive => 1},
 		'cf api "$1" --skip-ssl-validation',
 		$api_url
 	);
-	info("\n");
+
 	run(
 		{onfailure => "Failed to authenticate with CF", interactive => 1},
 		'cf auth "$1" "$2"',
 		$username, $password
 	);
-	info("\n");
+
 	run(
 		{onfailure => "Failed to save CF target", interactive => 1},
 		'cf save-target -f "$1"',
 		$cf_deployment_env
 	);
-	info("\n");
+
 	run(
 		{onfailure => "Failed to set CF target", interactive => 1},
 		'cf target'
 	);
-	info("\n");
 
 	return 1;
 }
