@@ -22,95 +22,113 @@ sub cmd_details {
 }
 
 sub perform {
-  my ($self) = @_;
-  my $env = $self->env;
+	my ($self) = @_;
+	my $env = $self->env;
 
-  # Log in to CF first
-  $self->cf_login();
+	$self->cf_login();
 
-  # Get broker credentials from exodus data
-  my $broker_username = $env->exodus_lookup("service_broker_username");
-  my $broker_password = $env->exodus_lookup("service_broker_password");
-  my $domain = $env->exodus_lookup("service_broker_domain");
+	my $broker_username = $env->exodus_lookup("service_broker_username")
+		or bail("Could not find service_broker_username in exodus data");
 
-  # Check if we got all the credentials
-  bail("Could not find service_broker_username in exodus data") unless $broker_username;
-  bail("Could not find service_broker_password in exodus data") unless $broker_password;
-  bail("Could not find service_broker_domain in exodus data") unless $domain;
+	my $broker_password = $env->exodus_lookup("service_broker_password")
+		or bail("Could not find service_broker_password in exodus data");
 
-  my $url = "https://$domain";
+	my $domain = $env->exodus_lookup("service_broker_domain")
+		or bail("Could not find service_broker_domain in exodus data");
 
-  # Create the service broker
-  my ($out, $rc, $err) = run('cf create-service-broker scheduler "$1" "$2" "$3"',
-                             $broker_username, $broker_password, $url);
+	my $url = "https://$domain";
 
-  if ($rc != 0) {
-    # Check if it's just because it already exists
-    if ($err && $err =~ /service broker name is taken/) {
-      info("\nService broker already exists, updating it instead...");
-      run('cf update-service-broker scheduler "$1" "$2" "$3"',
-          $broker_username, $broker_password, $url);
-    } else {
-      bail("Failed to create service broker: $err");
-    }
-  }
+	my ($out, $rc, $err) = run(
+		'cf create-service-broker scheduler "$1" "$2" "$3"',
+		$broker_username, $broker_password, $url
+	);
 
-  # Enable access to the service
-  run('cf enable-service-access scheduler');
+	if ($rc != 0) {
+		# Check if it's just because it already exists
+		if ($err && $err =~ /service broker name is taken/) {
+			info("\nService broker already exists, updating it instead...");
+			run(
+				{onfailure => "Failed to update service broker"},
+				'cf update-service-broker scheduler "$1" "$2" "$3"',
+				$broker_username, $broker_password, $url
+			);
+		} else {
+			bail("Failed to create service broker: $err");
+		}
+	}
 
-  info("\n#G{[OK]} Successfully created and configured the scheduler service broker.");
+	run(
+		{onfailure => "Failed to enable service access for scheduler"},
+		'cf enable-service-access scheduler')
+	;
+
+	info("\n#G{[OK]} Successfully created and configured the scheduler service broker.");
 
 	return $self->done();
 }
 
 sub cf_login {
-  my ($self) = @_;
-  my $env = $self->env;
+	my ($self) = @_;
+	my $env = $self->env;
+	my $cf_deployment_env = $env->name;
+	my $cf_deployment_type = "cf";
 
-  # Get CF deployment info from env or params
-  my $cf_deployment_env = $env->lookup('params.cf_deployment_env', undef);
-  bail("CF deployment environment not specified in params.cf_deployment_env")
-    unless $cf_deployment_env;
+	# Determine exodus target
+	my $cf_target = sprintf(
+		"%s/%s",
+		$env->lookup('params.cf_deployment_env', $env->name),
+		$env->lookup('params.cf_deployment_type', 'cf')
+	);
+	# Get exodus from target - default to empty hash if not found
+	my $cf_exodus = $env->exodus_lookup('.',{},$cf_target);
 
-  my $cf_deployment_type = "cf";  # Default to "cf"
+	my ($out, $rc) = run('cf plugins | grep -q \'^cf-targets\'');
+	my $use_cf_targets = ($rc == 0);
 
-  # Construct CF exodus path
-  my $cf_exodus_path = $env->exodus_mount()."$cf_deployment_env/$cf_deployment_type";
+	if (!$use_cf_targets) {
+		info(
+			"\n#Y{The cf-targets plugin does not seem to be installed}".
+			"\nInstall it first, via 'genesis do $cf_deployment_env -- setup-cli'".
+			"\nfrom your $cf_deployment_env environment in your CF deployment repo.\n"
+		);
+		bail("CF targets plugin is required");
+	}
 
-  # Check for CF targets plugin
-  my ($out, $rc) = run('cf plugins | grep -q \'^cf-targets\'');
-  my $use_cf_targets = ($rc == 0);
+	my $system_domain = $cf_exodus->{system_domain};
+	my $username = $cf_exodus->{admin_username};
+	my $password = $cf_exodus->{admin_password};
+	my $api_url = "https://".$cf_exodus->{api_domain};
 
-  if (!$use_cf_targets) {
-    info(
-      "\n#Y{The cf-targets plugin does not seem to be installed}".
-      "\nInstall it first, via 'genesis do $cf_deployment_env -- setup-cli'".
-      "\nfrom your $cf_deployment_env environment in your CF deployment repo.\n"
-    );
-    bail("CF targets plugin is required");
-  }
+	bail("Could not find system_domain in CF exodus data") unless $system_domain;
+	bail("Could not find admin_username in CF exodus data") unless $username;
+	bail("Could not find admin_password in CF exodus data") unless $password;
 
-  # Get CF login info from vault
-  my $system_domain = $self->vault->get("$cf_exodus_path:system_domain");
-  bail("Could not find system_domain in CF exodus data") unless $system_domain;
+	info("\n");
+	run(
+		{onfailure => "Failed to set CF API endpoint"},
+		'cf api "$1" --skip-ssl-validation',
+		$api_url
+	);
+	info("\n");
+	run(
+		{onfailure => "Failed to authenticate with CF"},
+		'cf auth "$1" "$2"',
+		$username, $password
+	);
+	info("\n");
+	run(
+		{onfailure => "Failed to save CF target"},
+		'cf save-target -f "$1"',
+		$cf_deployment_env
+	);
+	info("\n");
+	run(
+		{onfailure => "Failed to set CF target"},
+		'cf target'
+	);
+	info("\n");
 
-  my $api_url = "https://api.$system_domain";
-  my $username = $self->vault->get("$cf_exodus_path:admin_username");
-  bail("Could not find admin_username in CF exodus data") unless $username;
-
-  my $password = $self->vault->get("$cf_exodus_path:admin_password");
-  bail("Could not find admin_password in CF exodus data") unless $password;
-
-  # Log in to CF
-  # TODO:Check if the command errored and handle it
-  run('cf api "$1" --skip-ssl-validation', $api_url);
-  run('cf auth "$1" "$2"', $username, $password);
-  run('cf save-target -f "$1"', $cf_deployment_env);
-
-  info("\n");
-  run('cf target');
-
-  return 1;
+	return 1;
 }
 
 1;
