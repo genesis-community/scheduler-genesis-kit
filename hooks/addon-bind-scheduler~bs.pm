@@ -40,16 +40,10 @@ sub perform {
 	my $scheduler_secret = $self->{cf_exodus}{app_scheduler_secret}
 		or bail("Could not find app_scheduler_secret in exodus data");
 
-	my ($json, $json_rc) = read_json_from($env->bosh->execute("vms","--json"));
-	bail("Couldn't find scheduler vm, did you deploy scheduler yet?") if $json_rc;
+	my $broker_url = "https://scheduler." . $self->{cf_exodus}{system_domain}; # NOTE: From Route Registrar
 
-	my $broker_ip = $json->{Tables}[0]{Rows}[0]{ips}
-		or bail("Could not find scheduler ip in bosh vms, did you deploy scheduler yet?");
-
-	my $broker_url = "https://$broker_ip";
-
-	info("\nscheduler_client: $scheduler_client\n")
-	info("\nbroker_url: $broker_url\n")
+	info("\nscheduler_client: $scheduler_client\n");
+	info("\nbroker_url: $broker_url\n");
 
 	my ($out, $rc) = run(
 		'cf create-service-broker scheduler "$1" "$2" "$3"',
