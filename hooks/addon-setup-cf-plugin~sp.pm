@@ -49,12 +49,18 @@ sub perform {
   
   # Get latest release version from GitHub API
   info("Fetching latest release information from GitHub...");
-  my ($release_json) = run('curl -s https://api.github.com/repos/cloudfoundry-community/ocf-scheduler-cf-plugin/releases/latest');
-  my ($version) = run('echo \'$1\' | jq -r .tag_name', $release_json);
+  my ($release_json, $rc) = run('curl -s https://api.github.com/repos/cloudfoundry-community/ocf-scheduler-cf-plugin/releases/latest');
+  
+  if ($rc != 0) {
+    bail("Failed to fetch release information from GitHub API");
+  }
+  
+  # Parse the version from JSON response
+  my ($version, $rc2) = run("echo '$release_json' | jq -r .tag_name");
   chomp($version);
   
-  if (!$version || $version eq 'null') {
-    bail("Failed to fetch latest release version from GitHub");
+  if ($rc2 != 0 || !$version || $version eq 'null' || $version eq '') {
+    bail("Failed to parse release version from GitHub API response");
   }
   
   info("Latest release version: #G{$version}");
@@ -78,10 +84,14 @@ sub perform {
   # Download the plugin
   my $tmp_file = "/tmp/ocf-scheduler-cf-plugin-$$";
   info("Downloading plugin from #C{$download_url}...");
-  ($out, $rc) = run("curl -sL -o $tmp_file '$download_url'");
+  ($out, $rc) = run("curl -sL -f -o $tmp_file '$download_url'");
   
-  if ($rc != 0 || ! -f $tmp_file) {
-    bail("Failed to download plugin from $download_url");
+  if ($rc != 0) {
+    bail("Failed to download plugin from $download_url (HTTP error or file not found)");
+  }
+  
+  if (! -f $tmp_file || -z $tmp_file) {
+    bail("Downloaded file is missing or empty: $tmp_file");
   }
   
   # Make it executable
