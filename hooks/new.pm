@@ -4,7 +4,7 @@ use v5.20;
 use warnings; # Genesis min perl version is 5.20
 
 BEGIN {push @INC, $ENV{GENESIS_LIB} ? $ENV{GENESIS_LIB} : $ENV{HOME}.'/.genesis/lib'}
-use parent qw(Genesis::Hook::New);
+use parent qw(Genesis::Hook);
 
 use Genesis qw/run/;
 
