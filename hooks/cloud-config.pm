@@ -24,8 +24,9 @@ sub perform {
 	my ($self) = @_;
 	return 1 if $self->completed;
 
+	my $network_topology = $self->env->ocfp_config_lookup('net.topology', 'v2');
 	my $config = $self->build_cloud_config({
-			'networks' => [
+			'networks' => [$network_topology eq 'v1' ? () :
 				$self->network_definition('scheduler', strategy => 'ocfp',
 					dynamic_subnets => {
 						allocation => {
@@ -59,9 +60,9 @@ sub perform {
 								}, 't3.medium'),
 							'ephemeral_disk' => {
 								'size' => $self->for_scale({
-										dev => gigabytes(64),
-										prod => gigabytes(128)
-									}, gigabytes(64)),
+										dev => gigabytes(4),
+										prod => gigabytes(16)
+									}, gigabytes(4)),
 								'type' => 'gp3',
 								'encrypted' => $self->TRUE
 							},
@@ -119,9 +120,9 @@ sub perform {
 								}, 't3.medium'),
 							'ephemeral_disk' => {
 								'size' => $self->for_scale({
-										dev => gigabytes(64),
-										prod => gigabytes(128)
-									}, gigabytes(64)),
+										dev => gigabytes(4),
+										prod => gigabytes(16)
+									}, gigabytes(4)),
 								'type' => 'gp3',
 								'encrypted' => $self->TRUE
 							},
