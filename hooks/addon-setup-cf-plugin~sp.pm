@@ -74,8 +74,10 @@ sub perform {
 		chomp($existing);
 	}
 
-	# Construct download URL
-	my $binary_name = "ocf-scheduler-cf-plugin-${version}-${os}-${arch}";
+	# Construct download URL (fix asset naming: no 'v' in filename, use correct separator)
+	my $asset_version = $version;
+	$asset_version =~ s/^v//; # Remove leading 'v' if present
+	my $binary_name = "ocf-scheduler-cf-plugin-${asset_version}+${os}.${arch}";
 	my $download_url =
 "https://github.com/cloudfoundry-community/ocf-scheduler-cf-plugin/releases/download/${version}/${binary_name}";
 
