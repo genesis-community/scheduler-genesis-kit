@@ -4,7 +4,7 @@ author:  Wayne E. Seguin <wayneeseguin@starkandwayne.com>
 docs:    https://github.com/cloudfoundry-community/scheduler-boshrelease
 code:    https://github.com/genesis-community/scheduler-genesis-kit
 
-genesis_version_min: 3.1.0-rc.09
+genesis_version_min: 3.1.0
 
 supports:
 - aws
