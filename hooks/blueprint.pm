@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # vim: set ts=2 sw=2 sts=2 foldmethod=marker
-package Genesis::Hook::Blueprint::Scheduler v2.1.0;
+package Genesis::Hook::Blueprint::Scheduler v1.0.0;
 
 use strict;
 use warnings;
