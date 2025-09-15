@@ -29,7 +29,7 @@ sub perform {
 	));
 
 	# Handle CF route registrar
-	if ($self->want_feature(qw/^(?:cf-route-registrar|ocfp)$/)) {
+	if ($self->want_feature(qr/^(?:cf-route-registrar|ocfp)$/)) {
 		$self->add_files(qw(
 			manifests/releases/routing.yml
 			manifests/cf-route-registrar.yml
