@@ -14,7 +14,7 @@ meta:
       - (( concat genesis.env "-z2" ))
       - (( concat genesis.env "-z3" ))
 
-    #disk_type: (( concat genesis.env "." genesis.type ".disk-scheduler" ))
+    disk_type: (( concat genesis.env "." genesis.type ".disk-scheduler" ))
     vm_type:   (( concat genesis.env "." genesis.type ".vm-scheduler" ))
     networks:
       - (( replace ))

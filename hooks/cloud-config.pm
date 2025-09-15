@@ -1,7 +1,7 @@
 package Genesis::Hook::CloudConfig::Scheduler v1.0.0;
 
 use v5.20;
-use warnings; # Genesis min perl version is 5.20
+use warnings;
 
 # Only needed for development
 BEGIN {push @INC, $ENV{GENESIS_LIB} ? $ENV{GENESIS_LIB} : $ENV{HOME}.'/.genesis/lib'}
@@ -82,9 +82,9 @@ sub perform {
 						},
 						stackit => {
 							'instance_type' => $self->for_scale({
-									dev => 'g1.2',
-									prod => 'g1.3'
-								}, 'g1.2'),
+									dev => 'g1a.1d',
+									prod => 'c1a.4d'
+								}, 'g1a.2d'),
 							'boot_from_volume' => $self->TRUE,
 							'root_disk' => {
 								'size' => 30
@@ -105,9 +105,9 @@ sub perform {
 						},
 						stackit => {
 							'instance_type' => $self->for_scale({
-									dev => 'g1.2',
-									prod => 'g1.3'
-								}, 'g1.2'),
+									dev => 'g1a.1d',
+									prod => 'c1a.4d'
+								}, 'g1a.2d'),
 							'boot_from_volume' => $self->TRUE,
 							'root_disk' => {
 								'size' => 30
