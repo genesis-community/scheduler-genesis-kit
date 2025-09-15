@@ -9,45 +9,37 @@ use parent qw(Genesis::Hook::Features);
 use Genesis qw/bail/;
 
 sub init {
-  my $class = shift;
-  my $obj = $class->SUPER::init(@_);
-  $obj->check_minimum_genesis_version('3.1.0');
-  return $obj;
+	my $class = shift;
+	my $obj = $class->SUPER::init(@_);
+	$obj->check_minimum_genesis_version('3.1.0');
+	return $obj;
 }
 
 sub perform {
-  my ($self) = @_;
-  return 1 if $self->completed;
+	my ($self) = @_;
+	return 1 if $self->completed;
 
-  for my $feature (@{$self->{features}}) {
-    if ($feature =~ /^\+(.*)$/) {
-      bail(
-        "Cannot specify a virtual feature: please specify $1 without the ".
-        "preceding '+' to position it in the feature list."
-      );
-    } else {
-      $self->add_feature($feature);
-    }
-  }
+	for my $feature (@{$self->{features}}) {
+		bail(
+			"Cannot specify a virtual feature: please specify $1 without the ".
+			"preceding '+' to position it in the feature list."
+		) if ($feature =~ /^\+(.*)$/);
+		$self->add_feature($feature);
+	}
 
-  # Handle postgres database selection
-  if ($self->has_feature('ocfp')) {
-    if ($self->has_feature('internal-postgres')) {
-      $self->add_feature('+internal-postgres');
-    } else {
-      $self->add_feature("external-postgres-vault");
-    }
-    $self->add_feature("cf-route-registrar");
-  } else {
-    # Default to internal postgres unless external is specified
-    $self->add_feature("+internal-postgres")
-    unless $self->has_feature("external-postgres")
-    || $self->has_feature("external-postgres-vault");
-  }
+	# Handle postgres database selection
+	if ($self->has_feature('ocfp')) {
+		$self->add_feature('+internal-postgres') if ($self->has_feature('internal-postgres'));
+	} else {
+		# Default to internal postgres unless external is specified
+		$self->add_feature("+internal-postgres")
+			unless $self->has_feature("external-postgres")
+		|| $self->has_feature("external-postgres-vault");
+	}
 
-  $self->done([$self->build_features_list(
-        virtual_features => [ "internal-postgres" ]
-      )]);
+	$self->done([$self->build_features_list(
+		virtual_features => [ "internal-postgres" ]
+	)]);
 
 	return 1;
 
