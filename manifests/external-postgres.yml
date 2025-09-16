@@ -23,5 +23,6 @@ instance_groups:
 - name: scheduler
   jobs:
   - (( delete "postgres" ))
+  - name: scheduler
+    consumes: (( prune ))
   persistent_disk_type: (( prune ))
-  consumes: (( prune ))
