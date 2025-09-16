@@ -18,11 +18,13 @@ params:
   pg_sslmode:  (( grab meta.db.sslmode  ))
   pg_database: (( grab meta.db.database ))
 
-# Remove the postgres job on the scheduler instance
 instance_groups:
 - name: scheduler
   jobs:
   - (( delete "postgres" ))
-  - name: scheduler
-    consumes: (( prune ))
   persistent_disk_type: (( prune ))
+
+---
+- type: remove
+  path: /instance_groups/0/jobs/name=scheduler/consumes
+
