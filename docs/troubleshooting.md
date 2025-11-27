@@ -82,30 +82,43 @@ This guide helps troubleshoot common issues with the OCF Scheduler deployment an
    - **Symptom**: Plugin installed but commands fail
    - **Solution**: Ensure you're using a compatible CF CLI version (v7+ recommended)
 
-### `bind-scheduler` Failures
+### `bind-scheduler` Addon (Disabled - Not Yet Implemented)
 
-**Symptoms**:
+> **⚠️ IMPORTANT**: The `bind-scheduler` addon is currently **disabled** and **not functional**.
+
+**Why it's disabled**:
+- The upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API
+- Attempting to register it as a service broker fails with "404 Not Found" errors when CF tries to access `/v2/catalog`
+- The scheduler only provides job scheduling endpoints (`/jobs`, `/calls`), not service broker endpoints
+
+**Symptoms you may have seen**:
 - Error when running `genesis do myenv bind-scheduler`
-- Service broker not appearing in marketplace
+- "Status Code: 404 Not Found" when trying to create/update service broker
+- Service broker not appearing in marketplace after registration attempts
 
-**Common causes and solutions**:
+**Current Workaround**:
+Use the scheduler **directly via the CF CLI plugin** instead of through the CF marketplace:
 
-1. **CF Targets Plugin Missing**
-   - **Symptom**: "The cf-targets plugin does not seem to be installed" error
-   - **Solution**: Install the cf-targets plugin from your CF deployment
+1. Install the CF CLI plugin:
+   ```bash
+   genesis do myenv setup-cf-plugin
+   ```
 
-2. **CF Authentication Issues**
-   - **Symptom**: "Not authorized" or "Authentication failed" errors
-   - **Solution**:
-     - Verify CF admin credentials in Vault
-     - Check that the CF API URL is correct and accessible
+2. Use the plugin commands directly:
+   ```bash
+   cf create-job my-app my-job-name "rake db:migrate"
+   cf schedule-job my-job-name "0 2 * * *"
+   cf jobs
+   cf job-schedules
+   ```
 
-3. **Scheduler API Not Reachable**
-   - **Symptom**: Service broker created but not working
-   - **Solution**:
-     - Verify scheduler VM is running: `bosh -d myenv-ocf-scheduler instances`
-     - Check route registration: `cf routes | grep scheduler`
-     - Ensure network connectivity between CF and scheduler
+3. The scheduler API is accessible at: `https://scheduler.<cf-system-domain>`
+
+**Future Resolution**:
+This addon may be re-enabled if:
+- Upstream OCF Scheduler implements the CF Service Broker API spec
+- A separate service broker wrapper application is created
+- An alternative integration approach is developed
 
 ### `smoke-tests` Failures
 
@@ -118,8 +131,8 @@ This guide helps troubleshoot common issues with the OCF Scheduler deployment an
 1. **Service Instance Creation Failure**
    - **Symptom**: "Failed to create service instance" errors
    - **Solution**:
-     - Verify service broker is properly registered
-     - Check CF quotas and service plan access
+     - Note: Service broker registration is not currently functional (see above)
+     - Smoke tests should use direct API integration instead
 
 2. **Job Scheduling Failure**
    - **Symptom**: "Failed to schedule job" errors

@@ -29,14 +29,14 @@ sub perform {
       "\nTo use this Scheduler, you need to:\n".
       "\n1. Set up the Scheduler CF plugin:\n".
       "\t#G{$ENV{GENESIS_CALL_ENV} do setup-cf-plugin}\n".
-      "\n2. Bind the Scheduler service broker to your CF:\n".
-      "\t#G{$ENV{GENESIS_CALL_ENV} do bind-scheduler}\n".
-      "\n3. Create and manage scheduler instances:\n".
-      "\t#G{cf create-service scheduler dedicated my-scheduler}\n".
-      "\t#G{cf create-service-key my-scheduler my-scheduler-key}\n".
-      "\t#G{cf service-key my-scheduler my-scheduler-key}\n".
-      "\n4. Run smoke tests (optional):\n".
-      "\t#G{$ENV{GENESIS_CALL_ENV} do smoke-tests}\n"
+      "\n2. Create and manage scheduled jobs using the CF CLI plugin:\n".
+      "\t#G{cf create-job APP-NAME JOB-NAME COMMAND}\n".
+      "\t#G{cf schedule-job JOB-NAME \"*/5 * * * *\"}\n".
+      "\t#G{cf jobs}\n".
+      "\n3. Run smoke tests (optional):\n".
+      "\t#G{$ENV{GENESIS_CALL_ENV} do smoke-tests}\n".
+      "\n#Y{Note:} The bind-scheduler addon is not yet implemented as the upstream\n".
+      "OCF Scheduler does not provide a CF Service Broker API.\n"
     );
   }
 

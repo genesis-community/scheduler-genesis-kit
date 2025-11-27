@@ -1,5 +1,27 @@
 package Genesis::Hook::Addon::Scheduler::BindScheduler v1.0.1;
 
+# ============================================================================
+# DISABLED: This addon is prefixed with _ to disable it from being listed.
+#
+# REASON: The upstream OCF Scheduler application does not implement the
+# Cloud Foundry Service Broker API (specifically /v2/catalog and related
+# endpoints). The scheduler only provides job scheduling endpoints (/jobs,
+# /calls) and is designed to be used directly via the CF CLI plugin, not
+# through the CF marketplace/service broker mechanism.
+#
+# The application returns {} at root and 404 Not Found for /v2/catalog,
+# which causes CF service broker registration to fail.
+#
+# TO RE-ENABLE: Either:
+# 1. Wait for upstream to implement CF Service Broker API, or
+# 2. Create a separate service broker wrapper application, or
+# 3. Remove the underscore prefix to re-enable (though it will still fail)
+#
+# WORKAROUND: Use the scheduler directly via CF CLI plugin commands:
+#   - cf create-job APP-NAME JOB-NAME COMMAND
+#   - cf schedule-job JOB-NAME "CRON-EXPRESSION"
+# ============================================================================
+
 use v5.20;
 use warnings; # Genesis min perl version is 5.20
 

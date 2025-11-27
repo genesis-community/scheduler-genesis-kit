@@ -59,11 +59,8 @@ After deploying the scheduler, you'll need to:
    ```
    This adds the OCF scheduler plugin to your CF CLI.
 
-2. **Register and Configure Service Broker**:
-   ```bash
-   genesis do myenv bind-scheduler
-   ```
-   This registers the scheduler service with your Cloud Foundry, making it available in the marketplace.
+2. ~~**Register and Configure Service Broker**~~ (Not Yet Implemented):
+   > **⚠️ Note**: The `bind-scheduler` addon is currently disabled. The upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API. Use the scheduler directly via the CF CLI plugin commands instead.
 
 3. **Verify Deployment with Smoke Tests**:
    ```bash
@@ -73,30 +70,36 @@ After deploying the scheduler, you'll need to:
 
 ## Using the Scheduler Service
 
-After setting up the service broker, you can:
+After setting up the CLI plugin, you can schedule jobs directly:
 
-1. **Create a service instance**:
+1. **Create a job**:
    ```bash
-   cf create-service scheduler dedicated my-scheduler
+   cf create-job my-app my-job-name "rake db:migrate"
    ```
 
-2. **Create service keys for application access**:
+2. **Schedule the job with a cron expression**:
    ```bash
-   cf create-service-key my-scheduler my-scheduler-key
-   cf service-key my-scheduler my-scheduler-key
+   cf schedule-job my-job-name "0 2 * * *"  # Run daily at 2 AM
    ```
 
-3. **Bind applications to use the scheduler**:
+3. **List all jobs**:
    ```bash
-   cf bind-service my-app my-scheduler
+   cf jobs
    ```
 
-4. **Use the scheduler in your application** by referencing the service binding credentials.
-
-5. **Schedule tasks using the CF CLI plugin**:
+4. **View job schedules**:
    ```bash
-   cf schedule-job my-app "my-task" "0 * * * *"
-   cf schedule-job my-app "my-task" --command "rake cleanup"
+   cf job-schedules
+   ```
+
+5. **Run a job immediately**:
+   ```bash
+   cf run-job my-job-name
+   ```
+
+6. **View job execution history**:
+   ```bash
+   cf job-history my-job-name
    ```
 
 For more detailed usage instructions, please see the [MANUAL.md](MANUAL.md) file.

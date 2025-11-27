@@ -30,27 +30,16 @@ OCFScheduler   1.2.3   schedule-job, jobs, job, delete-job, run-job
 
 ### 2. Register the Service Broker
 
-Register the scheduler service broker with your Cloud Foundry deployment to make it available in the marketplace.
+> **⚠️ NOT YET IMPLEMENTED**: The `bind-scheduler` addon is currently disabled as the upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API. The scheduler can be used directly via the CF CLI plugin without service broker registration.
+
+~~Register the scheduler service broker with your Cloud Foundry deployment to make it available in the marketplace.~~
 
 ```bash
-# Register the service broker
-genesis do myenv bind-scheduler
+# DISABLED - Not yet implemented
+# genesis do myenv bind-scheduler
 ```
 
-**Verification**:
-```bash
-# Verify service broker exists
-cf service-brokers | grep scheduler
-
-# Verify service is available in marketplace
-cf marketplace | grep scheduler
-```
-
-You should see the scheduler service in the marketplace output:
-```
-service      plans       description
-scheduler    dedicated   OCF Scheduler for jobs and tasks
-```
+Instead, use the scheduler directly via the CF CLI plugin commands after installing it in step 1.
 
 ### 3. Run Smoke Tests
 
@@ -71,186 +60,166 @@ Errand 'smoke-tests' completed successfully
 
 ## Using the Scheduler Service
 
-### Creating a Service Instance
+> **Note**: Since the service broker functionality is not yet implemented, you'll use the scheduler directly via the CF CLI plugin commands. The scheduler API is automatically registered at `https://scheduler.<cf-system-domain>` and uses CF UAA for authentication.
 
-Before applications can use the scheduler, you need to create a service instance in your Cloud Foundry space.
+### Direct Job Management with CF CLI Plugin
 
-```bash
-# Create a service instance
-cf create-service scheduler dedicated my-scheduler
+### Direct Job Management with CF CLI Plugin
 
-# Wait for the service instance to be created
-cf service my-scheduler
-```
+The CF CLI plugin provides commands to manage scheduled jobs directly.
 
-Wait until the status shows `create succeeded`.
+#### Create a Job
 
-### Create Service Keys for API Access
-
-Service keys provide credentials for applications to access the scheduler API.
+Create a job that executes a command in your application's container:
 
 ```bash
-# Create a service key
-cf create-service-key my-scheduler my-scheduler-key
+# Create a simple job
+cf create-job my-app "cleanup-job" "rake db:cleanup"
 
-# View the service key credentials
-cf service-key my-scheduler my-scheduler-key
+# Create a job with custom resource limits
+cf create-job my-app "heavy-job" "python process.py" --memory 2048M --disk 1024M
 ```
 
-You'll see output similar to:
-```json
-{
-  "scheduler_url": "https://scheduler.example.com",
-  "client_id": "scheduler-client-0123456789",
-  "client_secret": "abcdef0123456789"
-}
-```
+#### Schedule a Job
 
-### Scheduling Jobs with the CF CLI Plugin
-
-The CF CLI plugin provides commands to manage scheduled jobs.
-
-#### Schedule a Task
-
-Schedule a task defined in your application's manifest.yml:
+After creating a job, schedule it with a cron expression:
 
 ```bash
-# Schedule a task to run every hour
-cf schedule-job my-app "my-task" "0 * * * *"
+# Schedule a job to run every hour
+cf schedule-job "cleanup-job" "0 * * * *"
+
+# Schedule a job to run every day at 2 AM
+cf schedule-job "cleanup-job" "0 2 * * *"
+
+# Schedule a job to run every 15 minutes
+cf schedule-job "data-sync-job" "*/15 * * * *"
 ```
 
-Schedule a custom command (not defined in manifest):
+#### View All Jobs
 
 ```bash
-# Schedule a rake task to run every 15 minutes
-cf schedule-job my-app "cleanup" --command "rake cleanup:perform" "*/15 * * * *"
-```
+# List all jobs in the current space
+cf jobs
 
-#### View Scheduled Jobs
-
-```bash
-# List all scheduled jobs for an application
-cf jobs my-app
+# View jobs for a specific app
+cf jobs --app my-app
 ```
 
 Example output:
 ```
-Getting scheduled jobs for app my-app...
+Getting jobs in space dev / org system...
 
-Job Name   Guid                                  Command               Schedule     Enabled
-cleanup    01234567-89ab-cdef-0123-456789abcdef  rake cleanup:perform  */15 * * * *  true
-my-task    fedcba98-7654-3210-fedc-ba9876543210                        0 * * * *     true
+Name          App Name  Command           
+cleanup-job   my-app    rake db:cleanup
+data-sync     my-app    python sync.py
 ```
 
-#### View Job Details and History
+#### View Job Schedules
 
 ```bash
-# View details and execution history for a job
-cf job my-app 01234567-89ab-cdef-0123-456789abcdef
+# List all job schedules
+cf job-schedules
 ```
 
 Example output:
 ```
-Getting job cleanup for app my-app...
+Getting job schedules in space dev / org system...
 
-Job Name:    cleanup
-Guid:        01234567-89ab-cdef-0123-456789abcdef
-Command:     rake cleanup:perform
-Schedule:    */15 * * * *
-Enabled:     true
-
-Execution History:
-Execution Guid                         Scheduled Time             Execution Status
-98765432-10fe-dcba-9876-543210fedcba   2023-04-15T12:00:00Z      SUCCEEDED
-87654321-09fe-dcba-8765-432109fedcba   2023-04-15T11:45:00Z      SUCCEEDED
-76543210-98fe-dcba-7654-321098fedcba   2023-04-15T11:30:00Z      FAILED
+Job Name      Schedule      Enabled
+cleanup-job   0 2 * * *     true
+data-sync     */15 * * * *  true
 ```
 
 #### Run a Job Immediately
 
 ```bash
 # Execute a job immediately, regardless of schedule
-cf run-job my-app 01234567-89ab-cdef-0123-456789abcdef
+cf run-job "cleanup-job"
+```
+
+#### View Job Execution History
+
+```bash
+# View execution history for a job
+cf job-history "cleanup-job"
+```
+
+Example output:
+```
+Getting execution history for job cleanup-job...
+
+Execution Guid                         Scheduled Time           State      Message
+98765432-10fe-dcba-9876-543210fedcba   2025-11-27T14:00:00Z    SUCCEEDED  Task completed
+87654321-09fe-dcba-8765-432109fedcba   2025-11-27T13:45:00Z    SUCCEEDED  Task completed
+76543210-98fe-dcba-7654-321098fedcba   2025-11-27T13:30:00Z    FAILED     Command exited with code 1
 ```
 
 #### Delete a Job
 
 ```bash
-# Delete a scheduled job
-cf delete-job my-app 01234567-89ab-cdef-0123-456789abcdef
+# Delete a job (this also removes all its schedules)
+cf delete-job "cleanup-job"
+```
+
+#### Delete a Specific Schedule
+
+```bash
+# Delete a specific schedule (keeps the job, just removes the schedule)
+cf delete-job-schedule "cleanup-job" "SCHEDULE-GUID"
+```
+
+## Advanced Usage: Calls (HTTP Endpoint Scheduling)
+
+In addition to jobs (task execution), the scheduler supports "calls" - scheduling HTTP requests to endpoints.
+
+### Create a Call
+
+```bash
+# This is done via the scheduler API directly
+# See "Using the Scheduler API Directly" section below
 ```
 
 ## Application Integration Examples
 
-### 1. Binding an Application
+### Accessing the Scheduler from Your Application
 
-To use the scheduler from your application, bind the service instance:
+Since the scheduler uses CF UAA for authentication, your applications can interact with the scheduler API directly using CF user or client credentials.
+
+## Using the Scheduler API Directly
+
+You can use the scheduler API directly from your application for more advanced scheduling scenarios. The scheduler API is available at `https://scheduler.<cf-system-domain>`.
+
+### Authentication
+
+The scheduler uses CF UAA for authentication. You need a valid CF OAuth token.
+
+#### Get a Token Using CF CLI
 
 ```bash
-# Bind the scheduler service to your application
-cf bind-service my-app my-scheduler
-
-# Restart your application to pick up the new environment variables
-cf restart my-app
+# The easiest way is to use your current CF session
+cf oauth-token
 ```
 
-### 2. Accessing Scheduler Credentials in Your Application
+This returns: `bearer eyJhbGci...`
 
-The scheduler credentials are provided to your application through the `VCAP_SERVICES` environment variable.
+#### Get a Token Programmatically
 
-#### Node.js Example
-
-```javascript
-// Get scheduler credentials from VCAP_SERVICES
-const vcap = JSON.parse(process.env.VCAP_SERVICES);
-const scheduler = vcap.scheduler[0].credentials;
-
-console.log("Scheduler URL:", scheduler.scheduler_url);
-console.log("Client ID:", scheduler.client_id);
-console.log("Client Secret:", scheduler.client_secret);
+```bash
+# Using CF user credentials
+curl -k -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&username=USERNAME&password=PASSWORD" \
+  https://uaa.<cf-system-domain>/oauth/token \
+  -u "cf:"
 ```
 
-#### Ruby Example
+#### Get a Token Using Client Credentials
 
-```ruby
-# Get scheduler credentials from VCAP_SERVICES
-vcap = JSON.parse(ENV['VCAP_SERVICES'])
-scheduler = vcap['scheduler'][0]['credentials']
-
-puts "Scheduler URL: #{scheduler['scheduler_url']}"
-puts "Client ID: #{scheduler['client_id']}"
-puts "Client Secret: #{scheduler['client_secret']}"
-```
-
-#### Java Example
-
-```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-// Get scheduler credentials from VCAP_SERVICES
-String vcapJson = System.getenv("VCAP_SERVICES");
-ObjectMapper mapper = new ObjectMapper();
-JsonNode vcap = mapper.readTree(vcapJson);
-JsonNode scheduler = vcap.get("scheduler").get(0).get("credentials");
-
-String schedulerUrl = scheduler.get("scheduler_url").asText();
-String clientId = scheduler.get("client_id").asText();
-String clientSecret = scheduler.get("client_secret").asText();
-```
-
-### 3. Using the Scheduler API Directly
-
-You can use the scheduler API directly from your application for more advanced scheduling scenarios.
-
-#### Authentication
-
-First, obtain an OAuth token from UAA:
+If you have a UAA client configured:
 
 ```bash
 curl -k -X POST -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=client_credentials&client_id=CLIENT_ID&client_secret=CLIENT_SECRET" \
-  https://uaa.example.com/oauth/token
+  https://uaa.<cf-system-domain>/oauth/token
 ```
 
 Response:
@@ -258,62 +227,274 @@ Response:
 {
   "access_token": "eyJhbGci...",
   "token_type": "bearer",
-  "expires_in": 43199
+  "expires_in": 43199,
+  "scope": "...",
+  "jti": "..."
 }
 ```
+
+### API Endpoints
+
+The scheduler exposes RESTful endpoints for managing jobs and calls.
 
 #### Creating a Job via API
 
 ```bash
 # Create a new job
-curl -k -X POST -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ACCESS_TOKEN" \
+TOKEN=$(cf oauth-token)
+APP_GUID=$(cf app my-app --guid)
+
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: ${TOKEN}" \
   -d '{
-    "name": "api-job",
-    "command": "rake cleanup",
-    "schedule": "*/30 * * * *",
-    "app_guid": "APP_GUID",
-    "enabled": true
+    "name": "api-created-job",
+    "command": "rake db:cleanup",
+    "app_guid": "'${APP_GUID}'"
   }' \
-  https://scheduler.example.com/v1/jobs
+  https://scheduler.<cf-system-domain>/jobs?app_guid=${APP_GUID}
 ```
 
 Response:
 ```json
 {
   "guid": "01234567-89ab-cdef-0123-456789abcdef",
-  "name": "api-job",
-  "command": "rake cleanup",
-  "schedule": "*/30 * * * *",
+  "name": "api-created-job",
+  "command": "rake db:cleanup",
   "app_guid": "APP_GUID",
-  "enabled": true,
-  "created_at": "2023-04-15T12:00:00Z",
-  "updated_at": "2023-04-15T12:00:00Z"
+  "space_guid": "SPACE_GUID",
+  "created_at": "2025-11-27T12:00:00Z",
+  "updated_at": "2025-11-27T12:00:00Z"
 }
 ```
 
 #### Listing Jobs via API
 
 ```bash
-# List all jobs for an application
-curl -k -X GET -H "Authorization: Bearer ACCESS_TOKEN" \
-  https://scheduler.example.com/v1/jobs?app_guid=APP_GUID
+# List all jobs in a space
+SPACE_GUID=$(cf space dev --guid)
+TOKEN=$(cf oauth-token)
+
+curl -k -X GET \
+  -H "Authorization: ${TOKEN}" \
+  https://scheduler.<cf-system-domain>/jobs?space_guid=${SPACE_GUID}
 ```
 
 #### Getting Job Details via API
 
 ```bash
 # Get details for a specific job
-curl -k -X GET -H "Authorization: Bearer ACCESS_TOKEN" \
-  https://scheduler.example.com/v1/jobs/01234567-89ab-cdef-0123-456789abcdef
+TOKEN=$(cf oauth-token)
+JOB_GUID="01234567-89ab-cdef-0123-456789abcdef"
+
+curl -k -X GET \
+  -H "Authorization: ${TOKEN}" \
+  https://scheduler.<cf-system-domain>/jobs/${JOB_GUID}
+```
+
+#### Creating a Job Schedule via API
+
+```bash
+# Schedule a job
+TOKEN=$(cf oauth-token)
+JOB_GUID="01234567-89ab-cdef-0123-456789abcdef"
+
+curl -k -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: ${TOKEN}" \
+  -d '{
+    "enabled": true,
+    "expression": "0 2 * * *",
+    "expression_type": "cron"
+  }' \
+  https://scheduler.<cf-system-domain>/jobs/${JOB_GUID}/schedules
 ```
 
 #### Running a Job Immediately via API
 
 ```bash
 # Execute a job immediately
-curl -k -X POST -H "Authorization: Bearer ACCESS_TOKEN" \
-  https://scheduler.example.com/v1/jobs/01234567-89ab-cdef-0123-456789abcdef/execute
+TOKEN=$(cf oauth-token)
+JOB_GUID="01234567-89ab-cdef-0123-456789abcdef"
+
+curl -k -X POST \
+  -H "Authorization: ${TOKEN}" \
+  https://scheduler.<cf-system-domain>/jobs/${JOB_GUID}/execute
+```
+
+#### Deleting a Job via API
+
+```bash
+# Delete a job
+TOKEN=$(cf oauth-token)
+JOB_GUID="01234567-89ab-cdef-0123-456789abcdef"
+
+curl -k -X DELETE \
+  -H "Authorization: ${TOKEN}" \
+  https://scheduler.<cf-system-domain>/jobs/${JOB_GUID}
+```
+
+### Application Integration Example
+
+Here's how to integrate the scheduler API into your application:
+
+#### Node.js/JavaScript Example
+
+```javascript
+const axios = require('axios');
+
+// Configuration
+const SCHEDULER_URL = 'https://scheduler.system.example.com';
+const UAA_URL = 'https://uaa.system.example.com';
+const CLIENT_ID = 'your-client-id';
+const CLIENT_SECRET = 'your-client-secret';
+
+// Get OAuth token
+async function getToken() {
+  const response = await axios.post(
+    `${UAA_URL}/oauth/token`,
+    'grant_type=client_credentials',
+    {
+      auth: {
+        username: CLIENT_ID,
+        password: CLIENT_SECRET
+      },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+  return response.data.access_token;
+}
+
+// Create a job
+async function createJob(appGuid, jobName, command) {
+  const token = await getToken();
+  
+  const response = await axios.post(
+    `${SCHEDULER_URL}/jobs?app_guid=${appGuid}`,
+    {
+      name: jobName,
+      command: command,
+      app_guid: appGuid
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  return response.data;
+}
+
+// Schedule a job
+async function scheduleJob(jobGuid, cronExpression) {
+  const token = await getToken();
+  
+  const response = await axios.post(
+    `${SCHEDULER_URL}/jobs/${jobGuid}/schedules`,
+    {
+      enabled: true,
+      expression: cronExpression,
+      expression_type: 'cron'
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
+  return response.data;
+}
+
+// Usage
+(async () => {
+  const appGuid = process.env.APP_GUID;
+  const job = await createJob(appGuid, 'cleanup-job', 'rake db:cleanup');
+  console.log('Created job:', job.guid);
+  
+  const schedule = await scheduleJob(job.guid, '0 2 * * *');
+  console.log('Scheduled job:', schedule);
+})();
+```
+
+#### Python Example
+
+```python
+import requests
+import os
+
+# Configuration
+SCHEDULER_URL = 'https://scheduler.system.example.com'
+UAA_URL = 'https://uaa.system.example.com'
+CLIENT_ID = 'your-client-id'
+CLIENT_SECRET = 'your-client-secret'
+
+def get_token():
+    """Get OAuth token from UAA"""
+    response = requests.post(
+        f'{UAA_URL}/oauth/token',
+        data={'grant_type': 'client_credentials'},
+        auth=(CLIENT_ID, CLIENT_SECRET),
+        headers={'Content-Type': 'application/x-www-form-urlencoded'}
+    )
+    response.raise_for_status()
+    return response.json()['access_token']
+
+def create_job(app_guid, job_name, command):
+    """Create a new job"""
+    token = get_token()
+    
+    response = requests.post(
+        f'{SCHEDULER_URL}/jobs',
+        params={'app_guid': app_guid},
+        json={
+            'name': job_name,
+            'command': command,
+            'app_guid': app_guid
+        },
+        headers={
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+    )
+    response.raise_for_status()
+    return response.json()
+
+def schedule_job(job_guid, cron_expression):
+    """Schedule a job with a cron expression"""
+    token = get_token()
+    
+    response = requests.post(
+        f'{SCHEDULER_URL}/jobs/{job_guid}/schedules',
+        json={
+            'enabled': True,
+            'expression': cron_expression,
+            'expression_type': 'cron'
+        },
+        headers={
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json'
+        }
+    )
+    response.raise_for_status()
+    return response.json()
+
+# Usage
+if __name__ == '__main__':
+    app_guid = os.environ['APP_GUID']
+    
+    # Create job
+    job = create_job(app_guid, 'cleanup-job', 'python cleanup.py')
+    print(f"Created job: {job['guid']}")
+    
+    # Schedule it
+    schedule = schedule_job(job['guid'], '0 2 * * *')
+    print(f"Scheduled job: {schedule}")
 ```
 
 ## Common Use Cases and Examples
@@ -323,40 +504,60 @@ curl -k -X POST -H "Authorization: Bearer ACCESS_TOKEN" \
 Schedule regular database cleanup tasks:
 
 ```bash
-cf schedule-job data-service "cleanup" --command "rake db:cleanup" "0 2 * * *"
-```
+# Create the job
+cf create-job data-service "cleanup-job" "rake db:cleanup"
 
-This schedules a cleanup task to run every day at 2:00 AM.
+# Schedule it to run every day at 2:00 AM
+cf schedule-job "cleanup-job" "0 2 * * *"
+```
 
 ### 2. Periodic Reporting
 
 Generate and email reports on a schedule:
 
 ```bash
-cf schedule-job reporting-app "weekly-report" --command "python generate_report.py --type=weekly" "0 9 * * 1"
-```
+# Create the reporting job
+cf create-job reporting-app "weekly-report" "python generate_report.py --type=weekly"
 
-This schedules a weekly report to be generated every Monday at 9:00 AM.
+# Schedule it for every Monday at 9:00 AM
+cf schedule-job "weekly-report" "0 9 * * 1"
+```
 
 ### 3. Data Synchronization
 
 Sync data from external systems periodically:
 
 ```bash
-cf schedule-job integration-app "sync-inventory" --command "node sync.js --source=inventory" "*/15 * * * *"
-```
+# Create the sync job
+cf create-job integration-app "sync-inventory" "node sync.js --source=inventory"
 
-This schedules data synchronization to run every 15 minutes.
+# Schedule it to run every 15 minutes
+cf schedule-job "sync-inventory" "*/15 * * * *"
+```
 
 ### 4. Batch Processing
 
 Process data in batches during off-peak hours:
 
 ```bash
-cf schedule-job batch-processor "process-transactions" "0 1 * * *"
+# Create the batch processing job
+cf create-job batch-processor "process-transactions" "python batch_process.py"
+
+# Schedule it to run daily at 1:00 AM
+cf schedule-job "process-transactions" "0 1 * * *"
 ```
 
-This schedules transaction processing to run at 1:00 AM daily.
+### 5. Cache Warming
+
+Pre-warm application caches before peak usage times:
+
+```bash
+# Create the cache warming job
+cf create-job web-app "warm-cache" "rake cache:warm"
+
+# Schedule it to run at 8:00 AM on weekdays
+cf schedule-job "warm-cache" "0 8 * * 1-5"
+```
 
 ## Best Practices
 
