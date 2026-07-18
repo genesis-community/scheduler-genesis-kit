@@ -30,7 +30,8 @@ sub perform {
 				$self->network_definition('scheduler', strategy => 'ocfp',
 					dynamic_subnets => {
 						allocation => {
-							size => 1,
+							# 2 IPs: scheduler instance + smoke-tests errand VM
+							size => scalar($self->env->lookup('bosh-configs.cloud.networks.scheduler.allocation.size', 2)),
 							statics => 0,
 						},
 						cloud_properties_for_iaas => {
