@@ -87,7 +87,7 @@ The OCF Scheduler Genesis Kit supports the following parameters:
 - `disk_type`: Disk type for the scheduler instance (default: "default")
 - `network`: Network to use for deployment (default: "default")
 - `availability_zones`: BOSH availability zones to use (default: "z1")
-- `stemcell_os`: Stemcell operating system (default: "ubuntu-jammy")
+- `stemcell_os`: Stemcell operating system (default: "ubuntu-noble")
 - `stemcell_version`: Stemcell version (default: "latest")
 
 #### Scheduler Configuration
