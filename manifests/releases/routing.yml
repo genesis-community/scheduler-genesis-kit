@@ -1,9 +1,9 @@
 releases:
 
 - name:    "routing"
-  version: "0.297.0"
-  url:     "https://bosh.io/d/github.com/cloudfoundry/routing-release?v=0.297.0"
-  sha1:    "41d9ea3c5ef61e4170e0261c27c22651f7055f33"
+  version: "0.343.0"
+  url:     "https://bosh.io/d/github.com/cloudfoundry/routing-release?v=0.343.0"
+  sha1:    "sha256:1409f3a0e56d89683f50c2d6c0fcb38d1a297c3710b3c067fb75182e7a7df356"
 
 - name:    "bpm"
   version: "1.2.19"
