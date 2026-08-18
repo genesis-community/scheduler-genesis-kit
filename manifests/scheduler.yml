@@ -38,7 +38,7 @@ meta:
     smoke-tests:
       vm_type: (( grab params.vm_type || "errand" ))
 
-    worker_count: (( grab params.worker_count || 10 ))
+    workers: (( grab params.worker_count || 10 ))
 
     log_level: (( grab params.log_level || "info" ))
 
@@ -86,7 +86,7 @@ instance_groups:
 
         properties:
           scheduler:
-            worker_count: (( grab meta.scheduler.worker_count ))
+            workers: (( grab meta.scheduler.workers ))
             log_level: (( grab meta.scheduler.log_level ))
             uaa:
               client_id: (( grab meta.cf.uaa.client_id ))
