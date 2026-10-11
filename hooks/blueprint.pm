@@ -57,9 +57,35 @@ sub perform {
 		$self->add_files("manifests/external-postgres.yml");
 	}
 
+	# Ubuntu resolute stemcells (opt-in; the default stays ubuntu-noble).  Added
+	# after every other fragment so that it wins over the stemcell default.
+	if ($self->want_feature('resolute')) {
+		my $env = $self->env;
+		my $stemcell_os = $env->lookup('params.stemcell_os', 'ubuntu-resolute');
+		bail(
+			"The #c{resolute} feature sets the stemcell os to ubuntu-resolute, but " .
+			"the environment sets #c{params.stemcell_os} to #R{%s}.  " .
+			"Remove that parameter.", $stemcell_os
+		) if $stemcell_os ne 'ubuntu-resolute';
+
+		$self->add_files('manifests/resolute.yml');
+		# The bpm release is only part of the manifest when the route registrar is.
+		$self->add_files('manifests/resolute-bpm.yml')
+			if $self->want_feature(qr/^(?:cf-route-registrar|ocfp)$/);
+		# The postgres release is only deployed with the internal database.
+		$self->add_files('manifests/resolute-postgres.yml')
+			if $self->want_feature('+internal-postgres');
+	} elsif ($self->env->lookup('params.stemcell_os', 'ubuntu-noble') eq 'ubuntu-resolute') {
+		bail(
+			"The environment sets #c{params.stemcell_os} to ubuntu-resolute " .
+			"without the #c{resolute} feature.  Enable the feature and remove " .
+			"that parameter."
+		);
+	}
+
 	# Add any custom ops files
 	foreach my $feature ($self->features) {
-		next if $feature =~ /^(external-postgres.*|cf-route-registrar|ocfp|\+.*)$/;
+		next if $feature =~ /^(external-postgres.*|cf-route-registrar|ocfp|resolute|\+.*)$/;
 
 		my $ops_file = $self->env->path("ops/$feature.yml");
 		if (-f $ops_file) {

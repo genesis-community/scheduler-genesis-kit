@@ -1,0 +1,26 @@
+---
+# postgres-release 51 predates resolute, and its successors up to 54.0.0 ship a
+# postgres-16 package that compiles with no bin/ directory there.  Release
+# 57.0.0 builds on resolute.
+#
+# Release 51 always ran PostgreSQL 16.3.  Release 57.0.0 defaults to 18 and
+# would run pg_upgrade from the old data directory in pre-start.  We pin 16 so
+# the data directory stays on its current major version and only a minor
+# upgrade runs during the stemcell change.
+#
+# The blueprint hook loads this file only when the kit deploys its internal
+# postgres.
+
+releases:
+- name:    postgres
+  version: 57.0.0
+  url:     https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=57.0.0
+  sha1:    sha256:fc5f73f57a6b9e7208e4293a7fb7faf11e4fb8fc8bb79db80d0d97e41ab1ee2a
+
+instance_groups:
+- name: scheduler
+  jobs:
+  - name: postgres
+    properties:
+      databases:
+        version: 16

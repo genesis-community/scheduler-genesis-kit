@@ -1,0 +1,19 @@
+---
+# Ubuntu resolute stemcell.
+#
+# Loaded last by the resolute feature so that it wins over the ubuntu-noble
+# default.  The stemcell version still comes from params.stemcell_version.
+#
+# The ocf-scheduler release pinned in releases/scheduler.yml calls chpst from
+# a ctl script that does not run under bpm, and resolute does not ship chpst.
+# Release 2.1.0 no longer calls it, and spruce merges this entry over the pin
+# by name.
+
+params:
+  stemcell_os: ubuntu-resolute
+
+releases:
+- name:    ocf-scheduler
+  version: 2.1.0
+  url:     https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.1.0/ocf-scheduler-2.1.0.tgz
+  sha1:    4e49a36f11a69fc1913e4ac4a7b5e9f80f4e917f
