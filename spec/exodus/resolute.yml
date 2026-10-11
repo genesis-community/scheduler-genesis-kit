@@ -1,0 +1,11 @@
+secret/exodus/resolute/cf:
+  core_network: default
+  admin_username: admin
+  admin_password: not-a-real-password
+  system_domain: sys.example.com
+  system_org: system
+  system_space: system
+  nats_client_cert: not-a-real-cert
+  nats_client_key: not-a-real-key
+  app_scheduler_client: app_scheduler
+  app_scheduler_secret: not-a-real-secret

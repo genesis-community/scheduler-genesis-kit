@@ -1,0 +1,12 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - resolute
+
+genesis:
+  env: resolute
+
+params:
+  stemcell_version: "0.184"

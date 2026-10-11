@@ -1,0 +1,13 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - cf-route-registrar
+  - resolute
+
+genesis:
+  env: resolute-route-registrar
+
+params:
+  stemcell_version: "0.184"

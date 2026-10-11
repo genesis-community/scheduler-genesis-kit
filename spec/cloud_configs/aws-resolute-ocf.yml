@@ -1,0 +1,52 @@
+azs:
+- name: resolute-ocf-z1
+  cloud_properties:
+    availability_zone: us-east-1a
+- name: resolute-ocf-z2
+  cloud_properties:
+    availability_zone: us-east-1b
+- name: resolute-ocf-z3
+  cloud_properties:
+    availability_zone: us-east-1c
+
+vm_types:
+- name: resolute-ocf.scheduler.vm-scheduler
+  cloud_properties:
+    instance_type: m5.large
+    ephemeral_disk: {size: 25_000}
+- name: resolute-ocf.scheduler.vm-smoke-test
+  cloud_properties:
+    instance_type: m5.large
+    ephemeral_disk: {size: 25_000}
+- name: default
+  cloud_properties:
+    instance_type: m5.large
+    ephemeral_disk: {size: 25_000}
+
+disk_types:
+- name: resolute-ocf.scheduler.disk-scheduler
+  disk_size: 50_000
+- name: default
+  disk_size: 3000
+
+networks:
+- name: resolute-ocf.scheduler.net-scheduler
+  type: manual
+  subnets:
+  - range:    10.0.2.0/24
+    gateway:  10.0.2.1
+    azs:      [resolute-ocf-z1, resolute-ocf-z2, resolute-ocf-z3]
+    dns:      [8.8.8.8]
+    reserved: [10.0.2.1 - 10.0.2.195]
+    static:   [10.0.2.196 - 10.0.2.198]
+    cloud_properties:
+      subnet: subnet-aaa
+- name: vip
+  type: vip
+
+compilation:
+  workers: 5
+  reuse_compilation_vms: true
+  az: resolute-ocf-z1
+  vm_type: default
+  network: resolute-ocf.scheduler.net-scheduler

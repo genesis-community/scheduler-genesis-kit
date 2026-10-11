@@ -1,0 +1,11 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - cf-route-registrar
+
+genesis:
+  env: base-route-registrar
+
+params: {}

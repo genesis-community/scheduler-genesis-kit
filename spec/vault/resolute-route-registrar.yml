@@ -1,0 +1,2 @@
+secret/resolute/route/registrar/scheduler/role:
+    password: <!{meta.vault}/role:password!>

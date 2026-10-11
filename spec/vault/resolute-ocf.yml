@@ -1,0 +1,94 @@
+secret/exodus/proto-main/bosh:
+  url: https://127.0.0.1:1
+  admin_username: admin
+  admin_password: admin
+  ca_cert: |
+    -----BEGIN CERTIFICATE-----
+    MIIDBTCCAe2gAwIBAgIUYjKS8WOFuUbD34nZV+D1/AG98oYwDQYJKoZIhvcNAQEL
+    BQAwEjEQMA4GA1UEAwwHbW9jay1jYTAeFw0yNjA3MTYxNTU1NDRaFw0zNjA3MTMx
+    NTU1NDRaMBIxEDAOBgNVBAMMB21vY2stY2EwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+    DwAwggEKAoIBAQDImTmvl1GGmnQNOt0/WW8HZxTzprM+iEQahNdQMiENA60+1g6T
+    iXxxdOrBG3DxL4J2cHJJ5OjsmBCK/L0jjeTQQWYJsGqKVLTEMmvH4+MXa35lm56D
+    bQOnmrvbodCr0a/cNTG+vBgj7L9Qz2usAWOdcylMDoO+Z4/p/hac8eJk+aP1sTF6
+    YdseDfVyt4VJ8AflNjvfg+eTfa5VJh5HgOBFiE2PQN3XjfQytksC67Myb63eehBI
+    n2+2XO/G6HkFsWAffHrr36KcNPH9YlJ9tusan0QBXi+L/K1cPNw0pFQx/iOkA4mN
+    rOESIUhTFhYCRLkD6WDeQZ92hJejTfWY4oRfAgMBAAGjUzBRMB0GA1UdDgQWBBRt
+    wAXaiSiHkGbvd9f/bACxDpU69TAfBgNVHSMEGDAWgBRtwAXaiSiHkGbvd9f/bACx
+    DpU69TAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQA1SNT3VNQp
+    bcZlIm4oZWEesz4EdcHQWZIstNiyEPFr+ReZI4bFISe26c1pCGRyQcQ6v4j7HUZA
+    vfxAlhLFNjamB7lodHptnjFNxrBL6vISCAgem0s+RFoaAkWT4UZdj8rUWpnZBhwA
+    IExI+txQje5XEXSc1qJGDGdr6VXcl6XAUBnjrkP8smA1+/NnSivLxJsdpgEPBQ8S
+    DdgZPJVjsfBnXJbvoYY40/V40lBtA98+5iiti5bB/7/mU/Z+ozO/ULRBWfk77hgI
+    w+gg0qmQGI2Tp7qHddfuYXxV+Wj7G05qPC6ZmMUkAyP4Ym0KrCjThbISpVkkw3j5
+    Bm0vl3ysfvki
+    -----END CERTIFICATE-----
+  kit_name: bosh
+  iaas: aws
+
+secret/exodus/resolute-ocf/cf:
+  core_network: resolute-ocf.scheduler.net-scheduler
+  admin_username: admin
+  admin_password: not-a-real-password
+  system_domain: sys.example.com
+  system_org: system
+  system_space: system
+  nats_client_cert: not-a-real-cert
+  nats_client_key: not-a-real-key
+  app_scheduler_client: app_scheduler
+  app_scheduler_secret: not-a-real-secret
+
+secret/config/resolute/ocf/net/subnets/ocfp-0:
+  az: z1
+
+secret/resolute/ocf/scheduler/db/scheduler:
+  scheme: postgres://
+  username: scheduler
+  password: not-a-real-password
+  hostname: db.example.com
+  port: "5432"
+  sslmode: disable
+  database: scheduler
+
+secret/certs/org:
+  ca: |
+    -----BEGIN CERTIFICATE-----
+    MIIDFzCCAf+gAwIBAgIUMucYdp5CxznDkVto+wHrcHF95+UwDQYJKoZIhvcNAQEL
+    BQAwGjEYMBYGA1UEAwwPdGVzdGtpdC1ib3NoLWNhMCAXDTI2MDkxMTIwNDYyNVoY
+    DzIxMjYwODE4MjA0NjI1WjAaMRgwFgYDVQQDDA90ZXN0a2l0LWJvc2gtY2EwggEi
+    MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDni/lrmCbZAhDqZzjF2ytB0Mgb
+    3MbqRUnLVDvz7EzlxE5MYTuLMgRbjVAQwiRUaTl6Mun+wWzhUQJIVIeyF0bGC+NK
+    XHxmWxcXk0MQV6WCxErk6/HpM0YQKRSV8gP5S/5ePCZF+VZxOTKyyKfeJgwgKS3o
+    PqO5TfWiEkuFGLODNiA6zGQioWH3JheMsGcCWfM/WY9dIcdCuJUdWphParZakU+7
+    9cy8Z0sMSzBlEvtg19yjZGOtikHpUT5SuWfy4VeP+yuu6OLTvAJHYSpBIQsOX7ON
+    abWca42a8fyILSzmRXVEJ+0cgMPez7z6oe6hF5EZXk2JDY6vB2lDmN6YDr1/AgMB
+    AAGjUzBRMB0GA1UdDgQWBBQRH6bJnkfgacKY3piLSkCWLMlL7jAfBgNVHSMEGDAW
+    gBQRH6bJnkfgacKY3piLSkCWLMlL7jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+    DQEBCwUAA4IBAQANFvAR9NbJsV6oyv6P7bQHEytB1h+fLQHdMSw+DgWcHDQIVv6l
+    DPt9dHKJXEknCU9PgKIJl8xDMzbwEdpq0sasfur1wLFVtpc9+A/Mmal6vpmO1Tqu
+    JiccmmQyAmLf9Sc4vZH0uvUicdNZiqG+3M+y9fhGW8vdLYC9ykfq/va4Udyz1jd9
+    vq+uqV1c39digu7KY2ZL2+LD2BwbrxHn70EEOVVgILJpqk9opj4Rb+Ig0pftr22R
+    IEZ00q39SVzuvEWXbt3E6yLRdbayIpIGJV/PUMsnRH5P/076j44N53VLP6wCOtTb
+    K9IgW0erQQK2/9NnzAZXaUm4Z3sSVgk3T//U
+    -----END CERTIFICATE-----
+
+secret/certs/dbs:
+  ca: |
+    -----BEGIN CERTIFICATE-----
+    MIIDFzCCAf+gAwIBAgIUMucYdp5CxznDkVto+wHrcHF95+UwDQYJKoZIhvcNAQEL
+    BQAwGjEYMBYGA1UEAwwPdGVzdGtpdC1ib3NoLWNhMCAXDTI2MDkxMTIwNDYyNVoY
+    DzIxMjYwODE4MjA0NjI1WjAaMRgwFgYDVQQDDA90ZXN0a2l0LWJvc2gtY2EwggEi
+    MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDni/lrmCbZAhDqZzjF2ytB0Mgb
+    3MbqRUnLVDvz7EzlxE5MYTuLMgRbjVAQwiRUaTl6Mun+wWzhUQJIVIeyF0bGC+NK
+    XHxmWxcXk0MQV6WCxErk6/HpM0YQKRSV8gP5S/5ePCZF+VZxOTKyyKfeJgwgKS3o
+    PqO5TfWiEkuFGLODNiA6zGQioWH3JheMsGcCWfM/WY9dIcdCuJUdWphParZakU+7
+    9cy8Z0sMSzBlEvtg19yjZGOtikHpUT5SuWfy4VeP+yuu6OLTvAJHYSpBIQsOX7ON
+    abWca42a8fyILSzmRXVEJ+0cgMPez7z6oe6hF5EZXk2JDY6vB2lDmN6YDr1/AgMB
+    AAGjUzBRMB0GA1UdDgQWBBQRH6bJnkfgacKY3piLSkCWLMlL7jAfBgNVHSMEGDAW
+    gBQRH6bJnkfgacKY3piLSkCWLMlL7jAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3
+    DQEBCwUAA4IBAQANFvAR9NbJsV6oyv6P7bQHEytB1h+fLQHdMSw+DgWcHDQIVv6l
+    DPt9dHKJXEknCU9PgKIJl8xDMzbwEdpq0sasfur1wLFVtpc9+A/Mmal6vpmO1Tqu
+    JiccmmQyAmLf9Sc4vZH0uvUicdNZiqG+3M+y9fhGW8vdLYC9ykfq/va4Udyz1jd9
+    vq+uqV1c39digu7KY2ZL2+LD2BwbrxHn70EEOVVgILJpqk9opj4Rb+Ig0pftr22R
+    IEZ00q39SVzuvEWXbt3E6yLRdbayIpIGJV/PUMsnRH5P/076j44N53VLP6wCOtTb
+    K9IgW0erQQK2/9NnzAZXaUm4Z3sSVgk3T//U
+    -----END CERTIFICATE-----

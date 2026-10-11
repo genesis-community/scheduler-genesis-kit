@@ -1,0 +1,150 @@
+addons:
+- include:
+    jobs:
+    - name: route_registrar
+      release: routing
+  jobs:
+  - name: bosh-dns-aliases
+    properties:
+      aliases:
+      - domain: nats.service.cf.internal
+        targets:
+        - deployment: base-route-registrar-cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: '*'
+      - domain: _.nats.service.cf.internal
+        targets:
+        - deployment: base-route-registrar-cf
+          domain: bosh
+          instance_group: nats
+          network: default
+          query: _
+    release: bosh-dns-aliases
+  name: bosh-dns-aliases
+exodus:
+  bosh: base-route-registrar
+  cf_deployment_env: base-route-registrar
+  cf_deployment_type: cf
+  features: cf-route-registrar
+  iaas: null
+  is_director: false
+  scale: null
+  services: null
+  use_create_env: false
+instance_groups:
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - consumes:
+      postgres:
+        from: scheduler-postgres
+    name: scheduler
+    properties:
+      scheduler:
+        cf:
+          api: https://api.sys.example.com
+        log_level: info
+        postgres:
+          uri: postgres://scheduler:scheduler@127.0.0.1:5432/scheduler?sslmode=disable
+        uaa:
+          client_id: app_scheduler
+          client_secret: not-a-real-secret
+          endpoint: https://uaa.sys.example.com
+        workers: 10
+    release: ocf-scheduler
+  - name: postgres
+    properties:
+      databases:
+        databases:
+        - name: scheduler
+        port: "5432"
+        roles:
+        - name: scheduler
+          password: scheduler
+    provides:
+      postgres:
+        as: scheduler-postgres
+    release: postgres
+  - consumes:
+      nats-tls:
+        deployment: base-route-registrar-cf
+        from: nats-tls
+    name: route_registrar
+    properties:
+      nats:
+        tls:
+          client_cert: not-a-real-cert
+          client_key: not-a-real-key
+          enabled: true
+      route_registrar:
+        host: sys.example.com
+        routes:
+        - name: scheduler
+          port: 8000
+          registration_interval: 10s
+          uris:
+          - scheduler.sys.example.com
+    release: routing
+  - name: bpm
+    release: bpm
+  name: scheduler
+  networks:
+  - name: default
+  persistent_disk_type: default
+  stemcell: default
+  vm_type: default
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: smoke-tests
+    properties:
+      cf:
+        api: https://api.sys.example.com
+        organization: system
+        password: not-a-real-password
+        space: system
+        username: admin
+    release: ocf-scheduler
+  lifecycle: errand
+  name: smoke-tests
+  networks:
+  - name: default
+  stemcell: default
+  vm_type: errand
+name: base-route-registrar-scheduler
+releases:
+- name: ocf-scheduler
+  sha1: 168c8f37fe0f040d46c0cdc38c14324936e52fe2
+  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.0.0/ocf-scheduler-2.0.0.tgz
+  version: 2.0.0
+- name: routing
+  sha1: sha256:1409f3a0e56d89683f50c2d6c0fcb38d1a297c3710b3c067fb75182e7a7df356
+  url: https://bosh.io/d/github.com/cloudfoundry/routing-release?v=0.343.0
+  version: 0.343.0
+- name: bpm
+  sha1: sha256:40af85114d2a8a67812bf65212076581ea42cefcf67ee6b8d78d778ed1ca2b85
+  url: https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.4.26
+  version: 1.4.26
+- name: bosh-dns-aliases
+  sha1: 55b3dced813ff9ed92a05cda02156e4b5604b273
+  url: https://bosh.io/d/github.com/cloudfoundry/bosh-dns-aliases-release?v=0.0.4
+  version: 0.0.4
+- name: postgres
+  sha1: 84ca2cd0773d2bcb92872773a330a5c087d9eebb
+  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=51
+  version: "51"
+stemcells:
+- alias: default
+  os: ubuntu-noble
+  version: latest
+update:
+  canaries: 1
+  canary_watch_time: 5000-600000
+  max_errors: 1
+  max_in_flight: 1
+  serial: false
+  update_watch_time: 5000-600000

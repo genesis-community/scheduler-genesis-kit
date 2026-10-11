@@ -1,0 +1,92 @@
+exodus:
+  bosh: resolute
+  cf_deployment_env: resolute
+  cf_deployment_type: cf
+  features: resolute
+  iaas: null
+  is_director: false
+  scale: null
+  services: null
+  use_create_env: false
+instance_groups:
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - consumes:
+      postgres:
+        from: scheduler-postgres
+    name: scheduler
+    properties:
+      scheduler:
+        cf:
+          api: https://api.sys.example.com
+        log_level: info
+        postgres:
+          uri: postgres://scheduler:scheduler@127.0.0.1:5432/scheduler?sslmode=disable
+        uaa:
+          client_id: app_scheduler
+          client_secret: not-a-real-secret
+          endpoint: https://uaa.sys.example.com
+        workers: 10
+    release: ocf-scheduler
+  - name: postgres
+    properties:
+      databases:
+        databases:
+        - name: scheduler
+        port: "5432"
+        roles:
+        - name: scheduler
+          password: scheduler
+        version: 16
+    provides:
+      postgres:
+        as: scheduler-postgres
+    release: postgres
+  name: scheduler
+  networks:
+  - name: default
+  persistent_disk_type: default
+  stemcell: default
+  vm_type: default
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: smoke-tests
+    properties:
+      cf:
+        api: https://api.sys.example.com
+        organization: system
+        password: not-a-real-password
+        space: system
+        username: admin
+    release: ocf-scheduler
+  lifecycle: errand
+  name: smoke-tests
+  networks:
+  - name: default
+  stemcell: default
+  vm_type: errand
+name: resolute-scheduler
+releases:
+- name: ocf-scheduler
+  sha1: 4e49a36f11a69fc1913e4ac4a7b5e9f80f4e917f
+  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.1.0/ocf-scheduler-2.1.0.tgz
+  version: 2.1.0
+- name: postgres
+  sha1: sha256:fc5f73f57a6b9e7208e4293a7fb7faf11e4fb8fc8bb79db80d0d97e41ab1ee2a
+  url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=57.0.0
+  version: 57.0.0
+stemcells:
+- alias: default
+  os: ubuntu-resolute
+  version: "0.184"
+update:
+  canaries: 1
+  canary_watch_time: 5000-600000
+  max_errors: 1
+  max_in_flight: 1
+  serial: false
+  update_watch_time: 5000-600000

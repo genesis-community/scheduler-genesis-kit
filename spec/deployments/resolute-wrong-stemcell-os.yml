@@ -1,0 +1,12 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - resolute
+
+genesis:
+  env: resolute-wrong-stemcell-os
+
+params:
+  stemcell_os: ubuntu-noble
