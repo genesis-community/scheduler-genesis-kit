@@ -1,0 +1,11 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - service-broker
+
+genesis:
+  env: service-broker-no-route
+
+params: {}

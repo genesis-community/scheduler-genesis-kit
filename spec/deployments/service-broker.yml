@@ -1,0 +1,14 @@
+---
+kit:
+  name:    dev
+  version: latest
+  features:
+  - cf-route-registrar
+  - service-broker
+
+genesis:
+  env: service-broker
+
+params:
+  broker_orgs:
+  - poc

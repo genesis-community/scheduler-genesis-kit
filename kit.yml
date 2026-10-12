@@ -1,5 +1,5 @@
 name:    scheduler
-version: 1.0.2
+version: 1.1.0
 author:  Wayne E. Seguin <wayneeseguin@starkandwayne.com>
 docs:    https://github.com/cloudfoundry-community/scheduler-boshrelease
 code:    https://github.com/genesis-community/scheduler-genesis-kit
@@ -16,6 +16,10 @@ supports:
 - pve
 
 credentials:
+  service-broker:
+    broker:
+      password: random 64
+
   +internal-postgres:
     role:
       password: random 32 fixed

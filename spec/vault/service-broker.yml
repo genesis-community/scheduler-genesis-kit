@@ -1,0 +1,4 @@
+secret/service/broker/scheduler/role:
+    password: <!{meta.vault}/role:password!>
+secret/service/broker/scheduler/broker:
+    password: <!{meta.vault}/broker:password!>

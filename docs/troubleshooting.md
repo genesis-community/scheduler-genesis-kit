@@ -82,43 +82,16 @@ This guide helps troubleshoot common issues with the OCF Scheduler deployment an
    - **Symptom**: Plugin installed but commands fail
    - **Solution**: Ensure you're using a compatible CF CLI version (v7+ recommended)
 
-### `bind-scheduler` Addon (Disabled - Not Yet Implemented)
+### `bind-scheduler` Addon
 
-> **⚠️ IMPORTANT**: The `bind-scheduler` addon is currently **disabled** and **not functional**.
+The addon needs the `service-broker` feature and ocf-scheduler 2.2.0 or later. If the environment lacks the feature, the addon stops and says so.
 
-**Why it's disabled**:
-- The upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API
-- Attempting to register it as a service broker fails with "404 Not Found" errors when CF tries to access `/v2/catalog`
-- The scheduler only provides job scheduling endpoints (`/jobs`, `/calls`), not service broker endpoints
-
-**Symptoms you may have seen**:
-- Error when running `genesis do myenv bind-scheduler`
-- "Status Code: 404 Not Found" when trying to create/update service broker
-- Service broker not appearing in marketplace after registration attempts
-
-**Current Workaround**:
-Use the scheduler **directly via the CF CLI plugin** instead of through the CF marketplace:
-
-1. Install the CF CLI plugin:
-   ```bash
-   genesis do myenv setup-cf-plugin
-   ```
-
-2. Use the plugin commands directly:
-   ```bash
-   cf create-job my-app my-job-name "rake db:migrate"
-   cf schedule-job my-job-name "0 2 * * *"
-   cf jobs
-   cf job-schedules
-   ```
-
-3. The scheduler API is accessible at: `https://scheduler.<cf-system-domain>`
-
-**Future Resolution**:
-This addon may be re-enabled if:
-- Upstream OCF Scheduler implements the CF Service Broker API spec
-- A separate service broker wrapper application is created
-- An alternative integration approach is developed
+**Symptoms and fixes**:
+- "Could not find broker_url in the scheduler exodus data" means the environment has not been deployed since the feature was added. Deploy it, then run the addon again.
+- A `404 Not Found` from `/v2/catalog` means the deployed release is older than 2.2.0, or `scheduler.broker.enabled` is false. Check the release version with `bosh -d myenv-scheduler releases`.
+- A `401` from Cloud Controller means the registered broker password no longer matches vault. Run the addon again, because it updates an existing broker.
+- A developer who sees `binding_required` when creating a job needs to bind the app to a scheduler service instance first.
+- The service does not appear in `cf marketplace` for an org that is not listed in `params.broker_orgs`. Add the org and run the addon again.
 
 ### `smoke-tests` Failures
 
@@ -131,7 +104,7 @@ This addon may be re-enabled if:
 1. **Service Instance Creation Failure**
    - **Symptom**: "Failed to create service instance" errors
    - **Solution**:
-     - Note: Service broker registration is not currently functional (see above)
+     - With the `service-broker` feature on, an app needs a binding before it can create jobs
      - Smoke tests should use direct API integration instead
 
 2. **Job Scheduling Failure**

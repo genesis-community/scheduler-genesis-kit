@@ -35,6 +35,16 @@ sub perform {
 		));
 	}
 
+	# The broker needs its credential and the scheduler route; check.pm refuses
+	# the feature without a route.
+	if ($self->want_feature('service-broker')) {
+		bail(
+			"The #c{service-broker} feature requires the #c{cf-route-registrar} or #c{ocfp} " .
+			"feature, because Cloud Controller reaches the broker through the scheduler route."
+		) unless $self->want_feature(qr/^(?:cf-route-registrar|ocfp)$/);
+		$self->add_files("manifests/service-broker.yml");
+	}
+
 	# Add OCFP configuration if needed
 	if ($self->want_feature("ocfp")) {
 		$self->add_files("ocfp/ocfp.yml");
@@ -85,7 +95,7 @@ sub perform {
 
 	# Add any custom ops files
 	foreach my $feature ($self->features) {
-		next if $feature =~ /^(external-postgres.*|cf-route-registrar|ocfp|resolute|\+.*)$/;
+		next if $feature =~ /^(external-postgres.*|cf-route-registrar|ocfp|resolute|service-broker|\+.*)$/;
 
 		my $ops_file = $self->env->path("ops/$feature.yml");
 		if (-f $ops_file) {

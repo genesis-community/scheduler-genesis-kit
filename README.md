@@ -59,8 +59,11 @@ After deploying the scheduler, you'll need to:
    ```
    This adds the OCF scheduler plugin to your CF CLI.
 
-2. ~~**Register and Configure Service Broker**~~ (Not Yet Implemented):
-   > **⚠️ Note**: The `bind-scheduler` addon is currently disabled. The upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API. Use the scheduler directly via the CF CLI plugin commands instead.
+2. **Register the Service Broker** (only with the `service-broker` feature):
+   ```bash
+   genesis do myenv bind-scheduler
+   ```
+   This registers the broker with Cloud Foundry and enables the service for the orgs in `params.broker_orgs`. See the manual for what binding and unbinding do.
 
 3. **Verify Deployment with Smoke Tests**:
    ```bash

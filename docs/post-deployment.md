@@ -30,16 +30,13 @@ OCFScheduler   1.2.3   schedule-job, jobs, job, delete-job, run-job
 
 ### 2. Register the Service Broker
 
-> **⚠️ NOT YET IMPLEMENTED**: The `bind-scheduler` addon is currently disabled as the upstream OCF Scheduler application does not implement the Cloud Foundry Service Broker API. The scheduler can be used directly via the CF CLI plugin without service broker registration.
-
-~~Register the scheduler service broker with your Cloud Foundry deployment to make it available in the marketplace.~~
+This step applies only to environments that use the `service-broker` feature. It registers the scheduler service broker with your Cloud Foundry deployment and enables the service for the orgs in `params.broker_orgs`.
 
 ```bash
-# DISABLED - Not yet implemented
-# genesis do myenv bind-scheduler
+genesis do myenv bind-scheduler
 ```
 
-Instead, use the scheduler directly via the CF CLI plugin commands after installing it in step 1.
+Without the feature, skip this step and use the scheduler directly via the CF CLI plugin commands after installing it in step 1.
 
 ### 3. Run Smoke Tests
 
@@ -60,7 +57,7 @@ Errand 'smoke-tests' completed successfully
 
 ## Using the Scheduler Service
 
-> **Note**: Since the service broker functionality is not yet implemented, you'll use the scheduler directly via the CF CLI plugin commands. The scheduler API is automatically registered at `https://scheduler.<cf-system-domain>` and uses CF UAA for authentication.
+> **Note**: Without the `service-broker` feature, you use the scheduler directly via the CF CLI plugin commands. The scheduler API is automatically registered at `https://scheduler.<cf-system-domain>` and uses CF UAA for authentication.
 
 ### Direct Job Management with CF CLI Plugin
 

@@ -52,6 +52,15 @@ sub perform {
     }
   }
 
+  # The broker URL is the scheduler route, so the feature needs the route
+  if ($env->has_feature('service-broker')
+      && !$env->has_feature('cf-route-registrar') && !$env->has_feature('ocfp')) {
+    $env->notify(
+      error => "service-broker feature requires the cf-route-registrar or ocfp feature, because Cloud Controller reaches the broker through the scheduler route [#R{FAILED}]"
+    );
+    $self->{ok} = 0;
+  }
+
   # Check for external postgres configuration
   if ($env->has_feature('external-postgres') && ! $env->has_feature('external-postgres-vault')) {
     my $postgres_host = $env->lookup('params.db.hostname', undef);

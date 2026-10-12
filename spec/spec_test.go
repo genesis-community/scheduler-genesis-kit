@@ -31,6 +31,25 @@ var _ = Describe("Scheduler Kit", func() {
 		})
 	})
 
+	Describe("service-broker", func() {
+		Test(Environment{
+			Name:        "service-broker",
+			Exodus:      "service-broker",
+			CloudConfig: "aws",
+			CPI:         "aws",
+		})
+		Test(Environment{
+			Name:        "service-broker-no-route",
+			CloudConfig: "aws",
+			CPI:         "aws",
+			OutputMatchers: OutputMatchers{
+				GenesisAddSecrets: ContainSubstring("feature requires the"),
+				GenesisCheck:      ContainSubstring("feature requires the"),
+				GenesisManifest:   ContainSubstring("feature requires the"),
+			},
+		})
+	})
+
 	Describe("resolute", func() {
 		Test(Environment{
 			Name:        "resolute",

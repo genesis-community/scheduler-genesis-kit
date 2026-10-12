@@ -70,6 +70,15 @@ features:
   - cf-route-registrar
 ```
 
+### `service-broker`
+
+Serves the Open Service Broker API from the scheduler, so Cloud Foundry can register it and developers can create and bind a scheduler service. It needs ocf-scheduler 2.2.0 or later and either `cf-route-registrar` or `ocfp`.
+
+**Parameters**:
+- `broker_orgs` lists the orgs that can see the service. The `bind-scheduler` addon enables access for these orgs only.
+
+The kit generates the broker password in vault and publishes `broker_url`, `broker_username`, and `broker_password` in the scheduler's exodus data. The scheduler refuses job creation for apps that have no binding.
+
 ## Feature Compatibility
 
 | Feature Combination | Compatible | Notes |

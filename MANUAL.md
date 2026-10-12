@@ -15,6 +15,7 @@ This manual provides detailed instructions for deploying and managing the OCF Sc
 - [Post-Deployment Setup](#post-deployment-setup)
   - [Setting Up the CF CLI Plugin](#setting-up-the-cf-cli-plugin)
   - [Using the Scheduler from Cloud Foundry](#using-the-scheduler-from-cloud-foundry)
+  - [Registering the Service Broker](#registering-the-service-broker)
   - [Running Smoke Tests](#running-smoke-tests)
 - [Using the Scheduler Service](#using-the-scheduler-service)
   - [Scheduling Jobs](#scheduling-jobs)
@@ -251,11 +252,7 @@ genesis do myenv setup-cf-plugin -f
 
 ### Using the Scheduler from Cloud Foundry
 
-The OCF Scheduler has no service broker yet. The ocf-scheduler 2.1.1 release does not implement the Cloud Foundry Service Broker API, so it serves no catalog, cannot be registered with `cf create-service-broker`, and never appears in `cf marketplace`.
-
-The kit disables the `bind-scheduler` addon for that reason, so we do not run `genesis do myenv bind-scheduler`.
-
-Apps use the scheduler through the OCF Scheduler plugin for the cf CLI, which we install with `genesis do myenv setup-cf-plugin` as described above. The plugin commands authenticate with your own Cloud Foundry token, so no service instance or service binding is involved.
+Apps use the scheduler through the OCF Scheduler plugin for the cf CLI, which we install with `genesis do myenv setup-cf-plugin` as described above. The plugin commands authenticate with your own Cloud Foundry token. A deployment without the `service-broker` feature needs no service instance or service binding, and the scheduler does not appear in `cf marketplace`. To offer the scheduler as a marketplace service, we turn on the `service-broker` feature, as described in the next section.
 
 Release 2.1.1 limits each caller to their own spaces. A caller without `cloud_controller.admin` needs the space developer role in the space of the app, job, or call they name. The scheduler answers 403 when someone lists or creates in another space, and 404 when they name another tenant's job, call, or schedule. It still stores a call's `auth_header` and sends it when the call runs, but no response ever returns it. Only the resolute feature pins 2.1.1, so a noble deployment on the default 2.0.0 pin does not have these checks.
 
@@ -273,6 +270,46 @@ cf schedule-job my-job-name "0 2 * * *"
 ```
 
 Apps can also call an HTTP endpoint, such as an app route, on a schedule. We create the call with `cf create-call APP-NAME CALL-NAME URL` and schedule it with `cf schedule-call CALL-NAME SCHEDULE`.
+
+### Registering the Service Broker
+
+Release 2.2.0 and later can speak the Open Service Broker API, so we can register the scheduler with Cloud Foundry and let developers create a service instance and bind their apps to it. The broker is off unless we add the `service-broker` feature to the environment. The feature also needs `cf-route-registrar` or `ocfp`, because Cloud Controller reaches the broker through the scheduler route, and the check hook refuses the feature without one of them.
+
+When the feature is on, the kit generates the broker password in vault and gives the scheduler the broker username, the password, and the scheduler URL. It also publishes `broker_url`, `broker_username`, and `broker_password` in the scheduler's exodus data, which is where the `bind-scheduler` addon reads them. A service instance turns the scheduler on for one space, and each space can hold only one instance. A binding gives one app permission to be scheduled, and it returns the scheduler URL without any secret, because developers still authenticate to the scheduler with their own tokens.
+
+The feature also turns on `require_binding`. An app that has no binding cannot create jobs or calls, and the scheduler answers 403 with `binding_required`. Reading, running, and deleting what already exists stays open, and an admin is never blocked. Every space check from release 2.1.1 still runs first, so the binding requirement adds to those checks and never replaces them.
+
+```yaml
+kit:
+  features:
+  - ocfp
+  - service-broker
+
+params:
+  broker_orgs:
+  - poc
+```
+
+After we deploy, we register the broker with the addon.
+
+```bash
+genesis do myenv bind-scheduler
+```
+
+The addon logs in to Cloud Foundry with the admin credentials from the CF exodus data, then creates the broker, or updates it when it already exists. It passes the broker password through the environment and never on a command line. It then enables the service only for the orgs in `params.broker_orgs`, and it never enables the service for every org. With no orgs listed, it registers the broker, enables nothing, and tells us how to add orgs. We can name orgs on the command line with `-o ORG`, which replaces the list for that run, and we can add `--prune` to disable access for any org that is no longer listed.
+
+```bash
+genesis do myenv bind-scheduler -o poc -o sandbox --prune
+```
+
+A developer in an enabled org then creates the instance and binds the app.
+
+```bash
+cf create-service scheduler standard my-scheduler
+cf bind-service my-app my-scheduler
+```
+
+Unbinding pauses the app's schedules and deletes nothing, so its jobs, calls, and history all stay in place. A schedule that its owner had already disabled stays disabled. Binding the app again resumes only the schedules that the unbind paused. Deleting the service instance removes the instance record and leaves the paused jobs where they are.
 
 ### Running Smoke Tests
 

@@ -35,8 +35,13 @@ sub perform {
       "\t#G{cf jobs}\n".
       "\n3. Run smoke tests (optional):\n".
       "\t#G{$ENV{GENESIS_CALL_ENV} do smoke-tests}\n".
-      "\n#Y{Note:} The bind-scheduler addon is not yet implemented as the upstream\n".
-      "OCF Scheduler does not provide a CF Service Broker API.\n"
+      ($env->has_feature('service-broker')
+        ? "\n4. Register the service broker and enable it for the orgs in params.broker_orgs:\n".
+          "\t#G{$ENV{GENESIS_CALL_ENV} do bind-scheduler}\n".
+          "\nWith the broker on, an app must be bound to a scheduler service instance\n".
+          "before it can create jobs and calls.\n"
+        : "\n#Y{Note:} Enable the service-broker feature to offer the scheduler as a\n".
+          "marketplace service that developers can create and bind.\n")
     );
   }
 

@@ -29,7 +29,7 @@ genesis do myenv setup-cf-plugin -f
 
 ### `bind-scheduler`
 
-Registers the scheduler service broker with your Cloud Foundry deployment, making the scheduler service available in the marketplace.
+Registers the scheduler service broker with your Cloud Foundry deployment, making the scheduler service available in the marketplace for the orgs you choose.
 
 **Usage:**
 ```bash
@@ -38,12 +38,14 @@ genesis do myenv bind-scheduler
 
 **What it does:**
 1. Logs in to Cloud Foundry using admin credentials from the CF deployment exodus data
-2. Creates a service broker for the scheduler or updates it if it already exists
-3. Enables service access so all orgs can use the scheduler service
+2. Creates the service broker for the scheduler, or updates it if it already exists, with the broker URL and credentials from the scheduler's own exodus data
+3. Enables the service for each org in `params.broker_orgs`, or for each org named with `-o ORG`, and never for every org at once
+4. With `--prune`, disables access for any org that is no longer listed
+
+The environment must use the `service-broker` feature.
 
 **Requirements:**
 - Cloud Foundry CLI installed on the local machine
-- CF CLI targets plugin (`cf-targets`)
 - Admin access to the Cloud Foundry deployment
 - The scheduler deployment must be running
 

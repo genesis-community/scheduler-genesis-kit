@@ -1,0 +1,24 @@
+---
+# Opt-in Open Service Broker API.  The broker password is a kit credential,
+# the broker is reachable at the scheduler's own route, and the scheduler
+# refuses job and call creation for apps that have no binding.
+
+instance_groups:
+  - name: scheduler
+    jobs:
+      - name: scheduler
+        properties:
+          scheduler:
+            broker:
+              enabled:         true
+              username:        scheduler-broker
+              password:        (( vault meta.vault "/broker:password" ))
+              api_url:         (( concat "https://" meta.scheduler.domain ))
+              require_binding: true
+
+exodus:
+  broker_name:     scheduler
+  service_name:    scheduler
+  broker_url:      (( concat "https://" meta.scheduler.domain ))
+  broker_username: scheduler-broker
+  broker_password: (( vault meta.vault "/broker:password" ))
