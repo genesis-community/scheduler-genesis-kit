@@ -71,9 +71,9 @@ instance_groups:
 name: base-scheduler
 releases:
 - name: ocf-scheduler
-  sha1: 168c8f37fe0f040d46c0cdc38c14324936e52fe2
-  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.0.0/ocf-scheduler-2.0.0.tgz
-  version: 2.0.0
+  sha1: 524d6a1074c3097e2fa5cbf35b416608529b3f49
+  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.1.1/ocf-scheduler-2.1.1.tgz
+  version: 2.1.1
 - name: postgres
   sha1: 84ca2cd0773d2bcb92872773a330a5c087d9eebb
   url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=51
