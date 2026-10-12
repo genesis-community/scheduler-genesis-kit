@@ -189,7 +189,7 @@ The feature is experimental, so we recommend trying it on a canary scheduler bef
 
 Resolute ships without runit, so the `chpst` command is missing. The ocf-scheduler release calls `chpst` in `jobs/scheduler/templates/bin/ctl.erb`, which is a plain control script that does not run under bpm, and that means the scheduler job cannot start on resolute. Release 2.0.0, the version this kit pins by default, has the problem, and so does every release before it.
 
-For that reason the feature pins ocf-scheduler 2.1.0, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep release 2.0.0. The director must be able to fetch release 2.1.0 from its release URL, or already hold it, before we deploy.
+For that reason the feature pins ocf-scheduler 2.1.1, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep release 2.0.0. The director must be able to fetch release 2.1.1 from its release URL, or already hold it, before we deploy.
 
 The bpm release is the second change. This kit pins bpm 1.4.26, and bpm releases older than 1.4.41 bundle a tini package that fails to compile on resolute. Under the feature the kit pins bpm 1.4.41 instead, and only when the route registrar is part of the deployment, because that is the one place the manifest carries the bpm release. The bosh-dns-aliases release, version 0.0.4, needs no change.
 
@@ -251,11 +251,13 @@ genesis do myenv setup-cf-plugin -f
 
 ### Using the Scheduler from Cloud Foundry
 
-The OCF Scheduler has no service broker yet. The ocf-scheduler 2.1.0 release does not implement the Cloud Foundry Service Broker API, so it serves no catalog, cannot be registered with `cf create-service-broker`, and never appears in `cf marketplace`.
+The OCF Scheduler has no service broker yet. The ocf-scheduler 2.1.1 release does not implement the Cloud Foundry Service Broker API, so it serves no catalog, cannot be registered with `cf create-service-broker`, and never appears in `cf marketplace`.
 
 The kit disables the `bind-scheduler` addon for that reason, so we do not run `genesis do myenv bind-scheduler`.
 
 Apps use the scheduler through the OCF Scheduler plugin for the cf CLI, which we install with `genesis do myenv setup-cf-plugin` as described above. The plugin commands authenticate with your own Cloud Foundry token, so no service instance or service binding is involved.
+
+Release 2.1.1 limits each caller to their own spaces. A caller without `cloud_controller.admin` needs the space developer role in the space of the app, job, or call they name. The scheduler answers 403 when someone lists or creates in another space, and 404 when they name another tenant's job, call, or schedule. It still stores a call's `auth_header` and sends it when the call runs, but no response ever returns it. Only the resolute feature pins 2.1.1, so a noble deployment on the default 2.0.0 pin does not have these checks.
 
 The following example creates a job for an app, runs it once, and schedules it to run every day at 2 AM.
 
