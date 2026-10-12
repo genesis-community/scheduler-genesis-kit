@@ -190,7 +190,7 @@ The feature is experimental, so we recommend trying it on a canary scheduler bef
 
 Resolute ships without runit, so the `chpst` command is missing. The ocf-scheduler release calls `chpst` in `jobs/scheduler/templates/bin/ctl.erb`, which is a plain control script that does not run under bpm, and that means the scheduler job cannot start on resolute. Release 2.0.0, the version this kit pins by default, has the problem, and so does every release before it.
 
-For that reason the feature pins ocf-scheduler 2.1.1, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep release 2.0.0. The director must be able to fetch release 2.1.1 from its release URL, or already hold it, before we deploy.
+For that reason the feature pins ocf-scheduler 2.2.0, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep release 2.0.0. The director must be able to fetch release 2.2.0 from its release URL, or already hold it, before we deploy.
 
 The bpm release is the second change. This kit pins bpm 1.4.26, and bpm releases older than 1.4.41 bundle a tini package that fails to compile on resolute. Under the feature the kit pins bpm 1.4.41 instead, and only when the route registrar is part of the deployment, because that is the one place the manifest carries the bpm release. The bosh-dns-aliases release, version 0.0.4, needs no change.
 
@@ -273,7 +273,7 @@ Apps can also call an HTTP endpoint, such as an app route, on a schedule. We cre
 
 ### Registering the Service Broker
 
-Release 2.2.0 and later can speak the Open Service Broker API, so we can register the scheduler with Cloud Foundry and let developers create a service instance and bind their apps to it. The broker is off unless we add the `service-broker` feature to the environment. The feature also needs `cf-route-registrar` or `ocfp`, because Cloud Controller reaches the broker through the scheduler route, and the check hook refuses the feature without one of them.
+Release 2.2.0 and later can speak the Open Service Broker API, so we can register the scheduler with Cloud Foundry and let developers create a service instance and bind their apps to it. The broker is off unless we add the `service-broker` feature to the environment. The feature also needs `cf-route-registrar` or `ocfp`, because Cloud Controller reaches the broker through the scheduler route, and the check hook refuses the feature without one of them. The feature also pins ocf-scheduler 2.2.0 in place of the default pin, so the director must be able to fetch that release from its release URL, or already hold it, before we deploy.
 
 When the feature is on, the kit generates the broker password in vault and gives the scheduler the broker username, the password, and the scheduler URL. It also publishes `broker_url`, `broker_username`, and `broker_password` in the scheduler's exodus data, which is where the `bind-scheduler` addon reads them. A service instance turns the scheduler on for one space, and each space can hold only one instance. A binding gives one app permission to be scheduled, and it returns the scheduler URL without any secret, because developers still authenticate to the scheduler with their own tokens.
 

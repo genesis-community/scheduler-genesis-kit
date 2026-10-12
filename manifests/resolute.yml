@@ -14,6 +14,6 @@ params:
 
 releases:
 - name:    ocf-scheduler
-  version: 2.1.1
-  url:     https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.1.1/ocf-scheduler-2.1.1.tgz
-  sha1:    524d6a1074c3097e2fa5cbf35b416608529b3f49
+  version: 2.2.0
+  url:     https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.2.0/ocf-scheduler-2.2.0.tgz
+  sha1:    10059dcebabe3356554c7d191b5d38dd5a199ad3
