@@ -14,7 +14,7 @@ This manual provides detailed instructions for deploying and managing the OCF Sc
 - [Ubuntu Resolute Stemcells](#ubuntu-resolute-stemcells)
 - [Post-Deployment Setup](#post-deployment-setup)
   - [Setting Up the CF CLI Plugin](#setting-up-the-cf-cli-plugin)
-  - [Binding the Scheduler Service Broker](#binding-the-scheduler-service-broker)
+  - [Using the Scheduler from Cloud Foundry](#using-the-scheduler-from-cloud-foundry)
   - [Running Smoke Tests](#running-smoke-tests)
 - [Using the Scheduler Service](#using-the-scheduler-service)
   - [Creating Service Instances](#creating-service-instances)
@@ -40,7 +40,6 @@ The OCF Scheduler consists of the following components:
 1. **Scheduler API**: Processes scheduler service API requests, exposed through Cloud Foundry routes
 2. **Worker Pool**: Executes scheduled jobs based on their defined schedules
 3. **Database**: Stores job definitions, schedules, and execution history
-4. **Service Broker**: Provides marketplace integration with Cloud Foundry
 
 ## Deployment
 
@@ -253,18 +252,28 @@ Add the `-f` flag to force installation over an existing version:
 genesis do myenv setup-cf-plugin -f
 ```
 
-### Binding the Scheduler Service Broker
+### Using the Scheduler from Cloud Foundry
 
-Register the scheduler service broker with your Cloud Foundry deployment:
+The OCF Scheduler has no service broker yet. The ocf-scheduler 2.1.0 release does not implement the Cloud Foundry Service Broker API, so it serves no catalog, cannot be registered with `cf create-service-broker`, and never appears in `cf marketplace`.
+
+The kit disables the `bind-scheduler` addon for that reason, so we do not run `genesis do myenv bind-scheduler`.
+
+Apps use the scheduler through the OCF Scheduler plugin for the cf CLI, which we install with `genesis do myenv setup-cf-plugin` as described above. The plugin commands authenticate with your own Cloud Foundry token, so no service instance or service binding is involved.
+
+The following example creates a job for an app, runs it once, and schedules it to run every day at 2 AM.
 
 ```bash
-genesis do myenv bind-scheduler
+# Create a job that runs a command in the app's environment
+cf create-job my-app my-job-name "rake db:migrate"
+
+# Run the job once, immediately
+cf run-job my-job-name
+
+# Schedule the job with a cron expression (every day at 2 AM)
+cf schedule-job my-job-name "0 2 * * *"
 ```
 
-This will:
-1. Log into the CF API using admin credentials
-2. Create or update the service broker
-3. Enable service access in all orgs
+Apps can also call an HTTP endpoint, such as an app route, on a schedule. We create the call with `cf create-call APP-NAME CALL-NAME URL` and schedule it with `cf schedule-call CALL-NAME SCHEDULE`.
 
 ### Running Smoke Tests
 
@@ -417,7 +426,7 @@ The OCF Scheduler requires a PostgreSQL database. You can use either:
 
 ### Security Settings
 
-The service integrates with UAA for authentication and authorization. It creates a UAA client with appropriate scopes for the service broker and API access.
+The service integrates with UAA for authentication and authorization. It creates a UAA client with appropriate scopes for API access.
 
 ### Worker Scaling
 
@@ -470,15 +479,6 @@ Monitor the scheduler service by:
 ## Troubleshooting
 
 Common issues and their solutions:
-
-### Service Broker Registration Fails
-
-**Symptoms**: The `bind-scheduler` addon fails with authentication errors.
-
-**Solutions**:
-- Verify CF admin credentials in vault
-- Check connectivity to the CF API
-- Ensure your CF deployment is healthy
 
 ### Scheduled Jobs Not Running
 
