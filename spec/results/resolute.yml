@@ -72,9 +72,9 @@ instance_groups:
 name: resolute-scheduler
 releases:
 - name: ocf-scheduler
-  sha1: 10059dcebabe3356554c7d191b5d38dd5a199ad3
-  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.2.0/ocf-scheduler-2.2.0.tgz
-  version: 2.2.0
+  sha1: c15f30a9ad414fe2e30bfd4c10aa0dac5421e9eb
+  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.2.1/ocf-scheduler-2.2.1.tgz
+  version: 2.2.1
 - name: postgres
   sha1: sha256:fc5f73f57a6b9e7208e4293a7fb7faf11e4fb8fc8bb79db80d0d97e41ab1ee2a
   url: https://bosh.io/d/github.com/cloudfoundry/postgres-release?v=57.0.0
