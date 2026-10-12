@@ -17,11 +17,8 @@ This manual provides detailed instructions for deploying and managing the OCF Sc
   - [Using the Scheduler from Cloud Foundry](#using-the-scheduler-from-cloud-foundry)
   - [Running Smoke Tests](#running-smoke-tests)
 - [Using the Scheduler Service](#using-the-scheduler-service)
-  - [Creating Service Instances](#creating-service-instances)
-  - [Managing Service Keys](#managing-service-keys)
   - [Scheduling Jobs](#scheduling-jobs)
   - [Managing Scheduled Jobs](#managing-scheduled-jobs)
-  - [Application Integration](#application-integration)
 - [Advanced Configuration](#advanced-configuration)
   - [Database Configuration](#database-configuration)
   - [Security Settings](#security-settings)
@@ -283,49 +280,20 @@ Verify your deployment with the built-in smoke tests:
 genesis do myenv smoke-tests
 ```
 
-This runs an errand that creates a service instance, schedules a job, verifies execution, and cleans up.
+This runs the `smoke-tests` errand, which logs in with the CF admin credentials from the environment. The errand creates a temporary space named `scheduler-smoke-tests-` followed by a timestamp, installs the scheduler plugin, and runs the acceptance tests in that space. The tests push a small test app and exercise the job and call commands, such as `create-job`, `schedule-job`, `run-job`, and `delete-job`. The errand deletes the space after the tests pass.
 
 ## Using the Scheduler Service
 
-### Creating Service Instances
-
-Create a scheduler service instance in your CF space:
-
-```bash
-cf create-service scheduler dedicated my-scheduler
-```
-
-### Managing Service Keys
-
-Create service keys to obtain credentials for application binding:
-
-```bash
-cf create-service-key my-scheduler my-scheduler-key
-cf service-key my-scheduler my-scheduler-key
-```
-
-This will display output similar to:
-
-```
-Getting key my-scheduler-key for service instance my-scheduler...
-
-{
-  "scheduler_url": "https://scheduler.example.com",
-  "client_id": "scheduler-client-0123456789",
-  "client_secret": "abcdef0123456789"
-}
-```
-
 ### Scheduling Jobs
 
-Schedule tasks to run at specific times using cron expressions:
+Schedule jobs to run at specific times using cron expressions. The plugin takes the job name first and the cron expression second, and it accepts an optional `--timezone` flag:
 
 ```bash
-# Schedule a task defined in app's manifest.yml
-cf schedule-job my-app "my-task" "0 * * * *"
+# Schedule a job that was created with cf create-job
+cf schedule-job my-job-name "0 * * * *"
 
-# Schedule a custom command
-cf schedule-job my-app "cleanup" --command "rake cleanup:perform" "*/15 * * * *"
+# Interpret the cron expression in a named timezone
+cf schedule-job --timezone Europe/Berlin my-job-name "0 9 * * 1-5"
 ```
 
 Cron expression format:
@@ -347,66 +315,41 @@ Examples:
 
 ### Managing Scheduled Jobs
 
-List scheduled jobs:
+List the jobs in the current space:
 
 ```bash
-cf jobs my-app
+cf jobs
 ```
 
-View job details and execution history:
+List the job schedules in the current space:
 
 ```bash
-cf job my-app job-guid
+cf job-schedules
 ```
 
-Delete a scheduled job:
+View the execution history for a job:
 
 ```bash
-cf delete-job my-app job-guid
+cf job-history my-job-name
 ```
 
-Execute a job immediately:
+Delete a schedule with its GUID:
 
 ```bash
-cf run-job my-app job-guid
+cf delete-job-schedule my-job-name schedule-guid
 ```
 
-### Application Integration
+Delete a job:
 
-For direct application integration:
+```bash
+cf delete-job my-job-name
+```
 
-1. **Bind your application** to the scheduler service:
-   ```bash
-   cf bind-service my-app my-scheduler
-   ```
+Run a job immediately:
 
-2. **Access the credentials** in your application through the `VCAP_SERVICES` environment variable:
-   ```json
-   {
-     "scheduler": [
-       {
-         "credentials": {
-           "scheduler_url": "https://scheduler.example.com",
-           "client_id": "scheduler-client-0123456789",
-           "client_secret": "abcdef0123456789"
-         },
-         "label": "scheduler",
-         "name": "my-scheduler",
-         "plan": "dedicated",
-         "tags": ["scheduler", "cf"]
-       }
-     ]
-   }
-   ```
-
-3. **Use the Scheduler API** to programmatically manage jobs:
-   ```
-   GET /jobs                    # List jobs
-   GET /jobs/{guid}             # Get job details
-   POST /jobs                   # Create job
-   DELETE /jobs/{guid}          # Delete job
-   POST /jobs/{guid}/execute    # Execute job immediately
-   ```
+```bash
+cf run-job my-job-name
+```
 
 ## Advanced Configuration
 
@@ -426,7 +369,7 @@ The OCF Scheduler requires a PostgreSQL database. You can use either:
 
 ### Security Settings
 
-The service integrates with UAA for authentication and authorization. It creates a UAA client with appropriate scopes for API access.
+The service integrates with UAA for authentication and authorization. It uses an existing UAA client, `app_scheduler_client`, whose ID and secret come from the CF environment's exodus data. The Cloud Foundry kit defines that client with the `cloud_controller.read`, `cloud_controller.admin`, and `uaa.resource` authorities, so this kit does not create it.
 
 ### Worker Scaling
 
