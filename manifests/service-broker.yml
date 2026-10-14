@@ -8,9 +8,9 @@
 # release, so the two never disagree.
 releases:
   - name:    ocf-scheduler
-    version: 2.3.1
-    url:     https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.3.1/ocf-scheduler-2.3.1.tgz
-    sha1:    2296cf509b80572761a20774354a6efc5d8e77b6
+    version: 2.3.2
+    url:     https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.3.2/ocf-scheduler-2.3.2.tgz
+    sha1:    9e084baf4b2f738523c7d4a85124bb7db0d7c2f7
 
 instance_groups:
   - name: scheduler

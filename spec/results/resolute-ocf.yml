@@ -105,9 +105,9 @@ instance_groups:
 name: resolute-ocf-scheduler
 releases:
 - name: ocf-scheduler
-  sha1: 2296cf509b80572761a20774354a6efc5d8e77b6
-  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.3.1/ocf-scheduler-2.3.1.tgz
-  version: 2.3.1
+  sha1: 9e084baf4b2f738523c7d4a85124bb7db0d7c2f7
+  url: https://github.com/cloudfoundry-community/ocf-scheduler-boshrelease/releases/download/v2.3.2/ocf-scheduler-2.3.2.tgz
+  version: 2.3.2
 - name: routing
   sha1: sha256:1409f3a0e56d89683f50c2d6c0fcb38d1a297c3710b3c067fb75182e7a7df356
   url: https://bosh.io/d/github.com/cloudfoundry/routing-release?v=0.343.0
