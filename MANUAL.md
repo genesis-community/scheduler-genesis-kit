@@ -190,7 +190,7 @@ The feature is experimental, so we recommend trying it on a canary scheduler bef
 
 Resolute ships without runit, so the `chpst` command is missing. The ocf-scheduler release calls `chpst` in `jobs/scheduler/templates/bin/ctl.erb`, which is a plain control script that does not run under bpm, and that means the scheduler job cannot start on resolute. Release 2.0.0, the version this kit pinned before 2.1.1, has the problem, and so does every release before it.
 
-For that reason the feature pins ocf-scheduler 2.2.2, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep the default release 2.1.1. The director must be able to fetch release 2.2.2 from its release URL, or already hold it, before we deploy.
+For that reason the feature pins ocf-scheduler 2.3.0, which no longer calls `chpst`, in place of the default pin. The pin applies only when the feature is on, so noble deployments keep the default release 2.1.1. The director must be able to fetch release 2.3.0 from its release URL, or already hold it, before we deploy.
 
 The bpm release is the second change. This kit pins bpm 1.4.26, and bpm releases older than 1.4.41 bundle a tini package that fails to compile on resolute. Under the feature the kit pins bpm 1.4.41 instead, and only when the route registrar is part of the deployment, because that is the one place the manifest carries the bpm release. The bosh-dns-aliases release, version 0.0.4, needs no change.
 
